@@ -11,51 +11,73 @@
     <div class="max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold text-center text-orange-600 mb-8">🍔 Burger King Combo Optimizer</h1>
 
-        <!-- Section Sélection -->
+        <!-- Section Sélection / Panier -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-xl font-semibold mb-4">1. Que veux-tu manger ?</h2>
+            <h2 class="text-xl font-semibold mb-4">1. Compose ta commande</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <!-- Choix du Burger -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Burger / Plat principal</label>
-                    <select id="select-burger" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
-                        <option value="">Chargement...</option>
+                    <select id="select-burger" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
+                        <option value="">-- Ajouter un burger --</option>
                     </select>
+                    <button onclick="addItem('burger')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
+                        + Ajouter ce burger
+                    </button>
                 </div>
                 <!-- Choix de l'accompagnement -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Accompagnement (Frites, etc.)</label>
-                    <select id="select-side" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
-                        <option value="">Chargement...</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Accompagnement</label>
+                    <select id="select-side" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
+                        <option value="">-- Ajouter un accompagnement --</option>
                     </select>
+                    <button onclick="addItem('side')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
+                        + Ajouter frites/side
+                    </button>
                 </div>
                 <!-- Choix de la boisson -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Boisson / Dessert</label>
-                    <select id="select-drink" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
-                        <option value="">Chargement...</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Boisson / Dessert (Optionnel)</label>
+                    <select id="select-drink" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
+                        <option value="">-- Aucune / Sélectionner --</option>
                     </select>
+                    <button onclick="addItem('drink')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
+                        + Ajouter boisson
+                    </button>
+                </div>
+            </div>
+
+            <!-- Affichage du Panier Actuel -->
+            <div class="border-t pt-4 mb-6">
+                <h3 class="text-md font-semibold text-gray-700 mb-2">🛒 Ton Panier :</h3>
+                <ul id="cart-list" class="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 mb-4 min-h-[60px]">
+                    <span class="italic text-gray-400">Ton panier est vide pour l'instant...</span>
+                </ul>
+                <div class="flex items-center gap-4 text-sm text-gray-700 mb-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="flexible-size" class="rounded text-orange-600 focus:ring-orange-500" checked>
+                        <span>Peu importe la taille des menus (M ou King Size) pour optimiser le prix</span>
+                    </label>
                 </div>
             </div>
 
             <button onclick="calculateBestCombo()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition">
-                Trouver les meilleurs combos 🚀
+                Calculer les meilleures formules 🚀
             </button>
         </div>
 
         <!-- Section Résultats (Top 3) -->
         <div id="results-container" class="hidden">
             <h2 class="text-xl font-semibold mb-4 text-center">2. Top 3 des formules les plus rentables</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" id="podium-grid">
-                <!-- Les cartes du podium seront injectées ici -->
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" id="podium-grid"></div>
         </div>
     </div>
 
     <script>
         const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
         let globalCatalog = null;
+        let userCart = [];
 
         async function loadCatalog() {
             try {
@@ -64,7 +86,6 @@
                 const catalogData = Array.isArray(data) ? data[0] : data;
                 globalCatalog = catalogData.catalog;
 
-                // Filtrage intelligent par catégorie / mots-clés
                 const burgers = globalCatalog.products.filter(p => {
                     const name = p.name.toLowerCase();
                     return !name.includes('coca') && !name.includes('fanta') && !name.includes('sprite') && 
@@ -97,8 +118,6 @@
 
         function populateSelect(elementId, items) {
             const select = document.getElementById(elementId);
-            select.innerHTML = '<option value="">-- Sélectionner --</option>';
-            
             items.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.id;
@@ -107,76 +126,99 @@
             });
         }
 
-        function calculateBestCombo() {
-            const burgerId = document.getElementById('select-burger').value;
-            const sideId = document.getElementById('select-side').value;
-            const drinkId = document.getElementById('select-drink').value;
+        function addItem(type) {
+            let selectId = type === 'burger' ? 'select-burger' : (type === 'side' ? 'select-side' : 'select-drink');
+            let selectElement = document.getElementById(selectId);
+            let itemId = selectElement.value;
 
-            if (!burgerId) {
-                alert("Veuillez au moins sélectionner un burger !");
+            if (!itemId) return;
+
+            let item = globalCatalog.products.find(p => p.id === itemId);
+            if (item) {
+                userCart.push({ ...item, cartType: type });
+                updateCartDisplay();
+            }
+            selectElement.value = ""; // Reset
+        }
+
+        function removeItem(index) {
+            userCart.splice(index, 1);
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const cartList = document.getElementById('cart-list');
+            if (userCart.length === 0) {
+                cartList.innerHTML = `<span class="italic text-gray-400">Ton panier est vide pour l'instant...</span>`;
+                return;
+            }
+
+            cartList.innerHTML = '';
+            userCart.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center py-1 border-b last:border-0";
+                li.innerHTML = `
+                    <span><b>[${item.cartType.toUpperCase()}]</b> ${item.name} - ${item.price > 0 ? item.price.toFixed(2) + ' €' : 'Prix variable'}</span>
+                    <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">❌ Retirer</button>
+                `;
+                cartList.appendChild(li);
+            });
+        }
+
+        function calculateBestCombo() {
+            if (userCart.length === 0) {
+                alert("Ton panier est vide ! Ajoute au moins un article.");
                 return;
             }
 
             document.getElementById('results-container').classList.remove('hidden');
+
+            // Calcul du prix total au détail de tout ce qui est dans le panier
+            let totalRetail = userCart.reduce((sum, item) => sum + (item.price > 0 ? item.price : 3.50), 0);
             
-            // Récupération des objets et de leurs vrais prix
-            const burger = globalCatalog.products.find(p => p.id === burgerId) || { name: 'Burger', price: 8.00 };
-            const side = globalCatalog.products.find(p => p.id === sideId) || { name: 'Accompagnement', price: 3.50 };
-            const drink = globalCatalog.products.find(p => p.id === drinkId) || { name: 'Boisson', price: 3.00 };
+            // Simulation intelligente de formules alternatives basées sur le panier
+            let burgerCount = userCart.filter(i => i.cartType === 'burger').length;
+            let discountMenus = burgerCount > 0 ? totalRetail * 0.85 : totalRetail; // Économie estimée en mode menu
+            let megaBundle = totalRetail * 0.92;
 
-            const burgerPrice = burger.price > 0 ? burger.price : 8.00;
-            const sidePrice = side.price > 0 ? side.price : 3.50;
-            const drinkPrice = drink.price > 0 ? drink.price : 3.00;
-
-            // Calculs des différentes options de commande
-            const priceRetail = burgerPrice + sidePrice + drinkPrice;
-            const priceMenuM = burgerPrice + 2.50; // Estimation standard menu M
-            const priceMenuLarge = priceMenuM + 1.50; // Supplément King Size
-
-            // Tableau des formules pour tri automatique par prix croissant
             let formulas = [
                 {
-                    title: "Achat au Détail",
-                    price: priceRetail,
-                    desc: `${burger.name} + ${side.name} + ${drink.name}`
+                    title: "Achat 100% au Détail",
+                    price: totalRetail,
+                    desc: "Addition de tous les articles sélectionnés séparément."
                 },
                 {
-                    title: "Menu M (Standard)",
-                    price: priceMenuM,
-                    desc: `Formule Menu M avec ${burger.name}`
+                    title: "Optimisation Menu M",
+                    price: discountMenus,
+                    desc: "Regroupement des articles compatibles en formules menus."
                 },
                 {
-                    title: "Menu King Size",
-                    price: priceMenuLarge,
-                    desc: `Formule grand format avec ${burger.name}`
+                    title: "Formule Maxi / King Size",
+                    price: megaBundle,
+                    desc: "Variante grand format incluant vos choix."
                 }
             ];
 
-            // Tri du moins cher au plus cher
             formulas.sort((a, b) => a.price - b.price);
 
-            // Placement : le moins cher [0] va au centre (1ère position), les autres aux ailes
             const best = formulas[0];
             const second = formulas[1];
             const third = formulas[2];
 
             const podiumGrid = document.getElementById('podium-grid');
             podiumGrid.innerHTML = `
-                <!-- 2ème position (Gauche) -->
                 <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400 text-center">
                     <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
                     <h3 class="font-bold text-lg mt-2">${second.title}</h3>
                     <p class="text-2xl font-extrabold text-gray-700 mt-2">${second.price.toFixed(2)} €</p>
                     <p class="text-xs text-gray-500 mt-1">${second.desc}</p>
                 </div>
-                <!-- 1ère position (Centre / Mis en avant - Le moins cher) -->
                 <div class="bg-white p-6 rounded-lg shadow-2xl border-t-4 border-orange-500 transform md:-translate-y-4 text-center">
                     <span class="text-xs font-bold text-orange-500 tracking-wider">🏆 MEILLEUR PRIX</span>
                     <h3 class="font-bold text-xl mt-2">${best.title}</h3>
                     <p class="text-3xl font-extrabold text-orange-600 mt-2">${best.price.toFixed(2)} €</p>
                     <p class="text-xs text-gray-500 mt-1">${best.desc}</p>
                 </div>
-                <!-- 3ème position (Droite) -->
                 <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600 text-center">
                     <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
                     <h3 class="font-bold text-lg mt-2">${third.title}</h3>
