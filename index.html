@@ -66,7 +66,7 @@
 
                 console.log("Catalogue chargé :", globalCatalog);
 
-                // Remplir les sélecteurs avec les données réelles
+                // Remplir les listes avec les vrais produits
                 populateSelect('select-burger', globalCatalog.products);
                 populateSelect('select-side', globalCatalog.products);
                 populateSelect('select-drink', globalCatalog.products);
@@ -84,48 +84,56 @@
             items.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.id;
-                option.textContent = item.name;
+                // On affiche le nom et le prix s'il est supérieur à 0
+                option.textContent = `${item.name} ${item.price > 0 ? '(' + item.price.toFixed(2) + ' €)' : ''}`;
                 select.appendChild(option);
             });
         }
 
         function calculateBestCombo() {
-            const burger = document.getElementById('select-burger').value;
-            if (!burger) {
+            const burgerId = document.getElementById('select-burger').value;
+            if (!burgerId) {
                 alert("Veuillez au moins sélectionner un burger !");
                 return;
             }
 
             document.getElementById('results-container').classList.remove('hidden');
             
-            // Affichage du Top 3 (Le meilleur prix au centre avec effet visuel)
+            // Recherche de l'objet burger sélectionné pour récupérer son vrai prix
+            const selectedBurger = globalCatalog.products.find(p => p.id === burgerId);
+            const burgerPrice = selectedBurger ? selectedBurger.price : 8.00;
+            
+            // Calculs fictifs/dynamiques de base pour alimenter le Top 3
+            const aLaCartePrice = burgerPrice + 3.50 + 3.00; // Burger + Frites + Boisson au détail
+            const menuMPrice = burgerPrice > 0 ? burgerPrice + 2.50 : 10.90; // Formule menu M
+            const menuKingSizePrice = menuMPrice + 1.50; // Formule King Size
+
             const podiumGrid = document.getElementById('podium-grid');
             podiumGrid.innerHTML = `
                 <!-- 2ème position (Gauche) -->
                 <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400 text-center">
                     <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
                     <h3 class="font-bold text-lg mt-2">Achat au Détail</h3>
-                    <p class="text-2xl font-extrabold text-gray-700 mt-2">13,50 €</p>
-                    <p class="text-xs text-gray-500 mt-1">Burger seul + Frites + Boisson séparés</p>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">${aLaCartePrice.toFixed(2)} €</p>
+                    <p class="text-xs text-gray-500 mt-1">Articles achetés séparément</p>
                 </div>
                 <!-- 1ère position (Centre / Mis en avant) -->
                 <div class="bg-white p-6 rounded-lg shadow-2xl border-t-4 border-orange-500 transform md:-translate-y-4 text-center">
                     <span class="text-xs font-bold text-orange-500 tracking-wider">🏆 MEILLEUR PRIX</span>
-                    <h3 class="font-bold text-xl mt-2">Menu Best Of</h3>
-                    <p class="text-3xl font-extrabold text-orange-600 mt-2">10,90 €</p>
-                    <p class="text-xs text-gray-500 mt-1">Le menu complet le plus rentable</p>
+                    <h3 class="font-bold text-xl mt-2">Menu M</h3>
+                    <p class="text-3xl font-extrabold text-orange-600 mt-2">${menuMPrice.toFixed(2)} €</p>
+                    <p class="text-xs text-gray-500 mt-1">La formule la plus rentable</p>
                 </div>
                 <!-- 3ème position (Droite) -->
                 <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600 text-center">
                     <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
                     <h3 class="font-bold text-lg mt-2">Menu King Size</h3>
-                    <p class="text-2xl font-extrabold text-gray-700 mt-2">14,20 €</p>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">${menuKingSizePrice.toFixed(2)} €</p>
                     <p class="text-xs text-gray-500 mt-1">Format maxi</p>
                 </div>
             `;
         }
 
-        // Lancer le chargement au démarrage
         loadCatalog();
     </script>
 </body>
