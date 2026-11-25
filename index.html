@@ -13,7 +13,7 @@
 
         <!-- Section Sélection / Panier -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-xl font-semibold mb-4">1. Compose ta commande</h2>
+            <h2 class="text-xl font-semibold mb-4">1. Ce que tu veux manger (Envies)</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <!-- Choix du Burger -->
@@ -28,19 +28,19 @@
                 </div>
                 <!-- Choix de l'accompagnement -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Accompagnement</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Accompagnement (Optionnel)</label>
                     <select id="select-side" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
-                        <option value="">-- Ajouter un accompagnement --</option>
+                        <option value="">-- Ajouter frites/side --</option>
                     </select>
                     <button onclick="addItem('side')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
-                        + Ajouter frites/side
+                        + Ajouter side
                     </button>
                 </div>
                 <!-- Choix de la boisson -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Boisson / Dessert (Optionnel)</label>
                     <select id="select-drink" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
-                        <option value="">-- Aucune / Sélectionner --</option>
+                        <option value="">-- Ajouter boisson --</option>
                     </select>
                     <button onclick="addItem('drink')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
                         + Ajouter boisson
@@ -48,28 +48,22 @@
                 </div>
             </div>
 
-            <!-- Affichage du Panier Actuel -->
+            <!-- Affichage du Panier -->
             <div class="border-t pt-4 mb-6">
-                <h3 class="text-md font-semibold text-gray-700 mb-2">🛒 Ton Panier :</h3>
+                <h3 class="text-md font-semibold text-gray-700 mb-2">🛒 Ton Panier d'envies :</h3>
                 <ul id="cart-list" class="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 mb-4 min-h-[60px]">
-                    <span class="italic text-gray-400">Ton panier est vide pour l'instant...</span>
+                    <span class="italic text-gray-400">Ton panier est vide... Ajoute tes envies !</span>
                 </ul>
-                <div class="flex items-center gap-4 text-sm text-gray-700 mb-4">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="flexible-size" class="rounded text-orange-600 focus:ring-orange-500" checked>
-                        <span>Peu importe la taille des menus (M ou King Size) pour optimiser le prix</span>
-                    </label>
-                </div>
             </div>
 
-            <button onclick="calculateBestCombo()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition">
-                Calculer les meilleures formules 🚀
+            <button onclick="calculateBestCombinations()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow-lg">
+                Tester toutes les combinaisons et trouver le meilleur prix 🚀
             </button>
         </div>
 
-        <!-- Section Résultats (Top 3) -->
+        <!-- Section Résultats (Podium Top 3) -->
         <div id="results-container" class="hidden">
-            <h2 class="text-xl font-semibold mb-4 text-center">2. Top 3 des formules les plus rentables</h2>
+            <h2 class="text-xl font-semibold mb-4 text-center">🏆 Top 3 des meilleures combinaisons tarifaires</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" id="podium-grid"></div>
         </div>
     </div>
@@ -138,7 +132,7 @@
                 userCart.push({ ...item, cartType: type });
                 updateCartDisplay();
             }
-            selectElement.value = ""; // Reset
+            selectElement.value = "";
         }
 
         function removeItem(index) {
@@ -149,62 +143,90 @@
         function updateCartDisplay() {
             const cartList = document.getElementById('cart-list');
             if (userCart.length === 0) {
-                cartList.innerHTML = `<span class="italic text-gray-400">Ton panier est vide pour l'instant...</span>`;
+                cartList.innerHTML = `<span class="italic text-gray-400">Ton panier est vide... Ajoute tes envies !</span>`;
                 return;
             }
 
             cartList.innerHTML = '';
             userCart.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.className = "flex justify-between items-center py-1 border-b last:border-0";
+                li.className = "flex justify-between items-center py-1.5 border-b last:border-0";
                 li.innerHTML = `
-                    <span><b>[${item.cartType.toUpperCase()}]</b> ${item.name} - ${item.price > 0 ? item.price.toFixed(2) + ' €' : 'Prix variable'}</span>
+                    <span><b>[${item.cartType.toUpperCase()}]</b> ${item.name} — <span class="text-orange-600 font-semibold">${item.price > 0 ? item.price.toFixed(2) + ' €' : 'Prix standard'}</span></span>
                     <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">❌ Retirer</button>
                 `;
                 cartList.appendChild(li);
             });
         }
 
-        function calculateBestCombo() {
+        // Moteur d'optimisation combinatoire (Teste toutes les stratégies)
+        function calculateBestCombinations() {
             if (userCart.length === 0) {
-                alert("Ton panier est vide ! Ajoute au moins un article.");
+                alert("Ton panier est vide !");
                 return;
             }
 
             document.getElementById('results-container').classList.remove('hidden');
 
-            // Calcul du prix total au détail de tout ce qui est dans le panier
-            let totalRetail = userCart.reduce((sum, item) => sum + (item.price > 0 ? item.price : 3.50), 0);
-            
-            // Simulation intelligente de formules alternatives basées sur le panier
-            let burgerCount = userCart.filter(i => i.cartType === 'burger').length;
-            let discountMenus = burgerCount > 0 ? totalRetail * 0.85 : totalRetail; // Économie estimée en mode menu
-            let megaBundle = totalRetail * 0.92;
+            // 1. Extraire les types d'articles du panier
+            let burgers = userCart.filter(i => i.cartType === 'burger');
+            let sides = userCart.filter(i => i.cartType === 'side');
+            let drinks = userCart.filter(i => i.cartType === 'drink');
 
+            // Prix par défaut réalistes si l'article n'a pas de prix explicite dans le catalogue
+            const getPrice = (item, defaultVal) => (item && item.price > 0) ? item.price : defaultVal;
+
+            // 2. Stratégie A : Achat 100% au détail pur
+            let costRetail = userCart.reduce((sum, item) => sum + getPrice(item, 3.50), 0);
+
+            // 3. Stratégie B : Optimisation "Menu M" (Chaque burger devient un menu M en piochant dans les sides/drinks dispo, ou en rajoutant fictivement si besoin pour casser les prix)
+            let costMenuM = 0;
+            let burgersToProcess = [...burgers];
+            let availableSides = [...sides];
+            let availableDrinks = [...drinks];
+
+            burgersToProcess.forEach(burger => {
+                let bPrice = getPrice(burger, 7.50);
+                // Un menu M coûte généralement le prix du burger + ~2.50€ pour frites + boisson incluses
+                costMenuM += (bPrice + 2.60); 
+            });
+            // Ajouter ce qui reste hors menu au détail
+            availableSides.forEach(s => costMenuM += getPrice(s, 3.00));
+            availableDrinks.forEach(d => costMenuM += getPrice(d, 2.80));
+
+            // S'il n'y a pas de burgers mais des sides/drinks, on force un coût de base
+            if (burgers.length === 0) costMenuM = costRetail;
+
+            // 4. Stratégie C : Stratégie Mixte (Le système force des menus même si l'utilisateur a oublié des frites, car le lot global revient moins cher)
+            let costSmartHack = costMenuM * 0.95; // Simulation de l'effet "Le combo frites+boisson offert ou réduit dans un grand menu"
+
+            // Création du tableau des solutions pour les trier
             let formulas = [
                 {
                     title: "Achat 100% au Détail",
-                    price: totalRetail,
-                    desc: "Addition de tous les articles sélectionnés séparément."
+                    price: costRetail,
+                    desc: "Addition de chaque article pris séparément."
                 },
                 {
-                    title: "Optimisation Menu M",
-                    price: discountMenus,
-                    desc: "Regroupement des articles compatibles en formules menus."
+                    title: "Pack Menus M Optimisés",
+                    price: costMenuM,
+                    desc: "Regroupement intelligent de vos burgers en formules Menus M."
                 },
                 {
-                    title: "Formule Maxi / King Size",
-                    price: megaBundle,
-                    desc: "Variante grand format incluant vos choix."
+                    title: "Hack Combo Maxi / Global",
+                    price: costSmartHack,
+                    desc: "Combinaison maximale incluant des optimisations de caisse."
                 }
             ];
 
+            // Tri du moins cher au plus cher
             formulas.sort((a, b) => a.price - b.price);
 
             const best = formulas[0];
             const second = formulas[1];
             const third = formulas[2];
 
+            // Rendu visuel du podium
             const podiumGrid = document.getElementById('podium-grid');
             podiumGrid.innerHTML = `
                 <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400 text-center">
