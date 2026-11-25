@@ -32,52 +32,54 @@
     </div>
 
     <script>
-        const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices'; // Remplace par ton URL de prod
+    const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
 
-        async function loadCatalog() {
-            try {
-                const response = await fetch(WEBHOOK_URL);
-                const data = await response.json();
-                console.log("Catalogue chargé :", data);
-                
-                document.getElementById('catalog-container').innerHTML = `
-                    <p class="text-green-600 font-medium">Catalogue chargé avec succès ! (${data.stats.totalMenus} menus, ${data.stats.totalProducts} produits)</p>
-                `;
-            } catch (error) {
-                console.error("Erreur de chargement :", error);
-                document.getElementById('catalog-container').innerHTML = `
-                    <p class="text-red-500">Erreur lors de la récupération des données via n8n.</p>
-                `;
-            }
-        }
-
-        function calculateBestCombo() {
-            // Afficher la section des résultats pour l'exemple
-            document.getElementById('results-container').classList.remove('hidden');
+    async function loadCatalog() {
+        try {
+            const response = await fetch(WEBHOOK_URL);
+            const data = await response.json();
             
-            // Simulation visuelle du Top 3 (2ème position, 1er au centre, 3ème position)
-            const podiumGrid = document.getElementById('podium-grid');
-            podiumGrid.innerHTML = `
-                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400">
-                    <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
-                    <h3 class="font-bold text-lg">Option A</h3>
-                    <p class="text-2xl font-extrabold text-gray-700 mt-2">12,50 €</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-orange-500 transform md:-translate-y-4">
-                    <span class="text-xs font-bold text-orange-500">🏆 MEILLEUR PRIX</span>
-                    <h3 class="font-bold text-xl">Option Gagnante</h3>
-                    <p class="text-3xl font-extrabold text-orange-600 mt-2">10,90 €</p>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600">
-                    <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
-                    <h3 class="font-bold text-lg">Option B</h3>
-                    <p class="text-2xl font-extrabold text-gray-700 mt-2">13,20 €</p>
-                </div>
+            // n8n renvoie un tableau avec l'objet principal à l'index 0
+            const catalogData = Array.isArray(data) ? data[0] : data;
+            
+            console.log("Catalogue chargé :", catalogData);
+            
+            document.getElementById('catalog-container').innerHTML = `
+                <p class="text-green-600 font-medium">Catalogue chargé avec succès ! 
+                (${catalogData.stats.totalMenus} menus, ${catalogData.stats.totalProducts} produits)</p>
+            `;
+        } catch (error) {
+            console.error("Erreur de chargement :", error);
+            document.getElementById('catalog-container').innerHTML = `
+                <p class="text-red-500">Erreur lors de la récupération des données via n8n : ${error.message}</p>
             `;
         }
+    }
 
-        // Lancer le chargement au démarrage
-        loadCatalog();
-    </script>
+    function calculateBestCombo() {
+        document.getElementById('results-container').classList.remove('hidden');
+        
+        const podiumGrid = document.getElementById('podium-grid');
+        podiumGrid.innerHTML = `
+            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400">
+                <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
+                <h3 class="font-bold text-lg">Option A</h3>
+                <p class="text-2xl font-extrabold text-gray-700 mt-2">12,50 €</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-orange-500 transform md:-translate-y-4">
+                <span class="text-xs font-bold text-orange-500">🏆 MEILLEUR PRIX</span>
+                <h3 class="font-bold text-xl">Option Gagnante</h3>
+                <p class="text-3xl font-extrabold text-orange-600 mt-2">10,90 €</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600">
+                <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
+                <h3 class="font-bold text-lg">Option B</h3>
+                <p class="text-2xl font-extrabold text-gray-700 mt-2">13,20 €</p>
+            </div>
+        `;
+    }
+
+    loadCatalog();
+</script>
 </body>
 </html>
