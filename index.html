@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optimize Burger King Price</title>
-    <!-- Tailwind CSS pour un design ra pide et propre -->
+    <title>Burger King Combo Optimizer</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-6">
@@ -14,10 +14,32 @@
         <!-- Section Sélection -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 class="text-xl font-semibold mb-4">1. Que veux-tu manger ?</h2>
-            <div id="catalog-container" class="space-y-4">
-                <p class="text-gray-500">Chargement du catalogue depuis n8n...</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Choix du Burger -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Burger / Plat principal</label>
+                    <select id="select-burger" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+                <!-- Choix de l'accompagnement -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Accompagnement (Frites, etc.)</label>
+                    <select id="select-side" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+                <!-- Choix de la boisson -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Boisson / Dessert</label>
+                    <select id="select-drink" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
             </div>
-            <button onclick="calculateBestCombo()" class="mt-6 w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition">
+
+            <button onclick="calculateBestCombo()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition">
                 Trouver les meilleurs combos 🚀
             </button>
         </div>
@@ -26,60 +48,85 @@
         <div id="results-container" class="hidden">
             <h2 class="text-xl font-semibold mb-4 text-center">2. Top 3 des formules les plus rentables</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" id="podium-grid">
-                <!-- Le meilleur prix (centre sur desktop) sera injecté ici -->
+                <!-- Les cartes du podium seront injectées ici -->
             </div>
         </div>
     </div>
 
     <script>
-    const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
+        const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
+        let globalCatalog = null;
 
-    async function loadCatalog() {
-        try {
-            const response = await fetch(WEBHOOK_URL);
-            const data = await response.json();
+        async function loadCatalog() {
+            try {
+                const response = await fetch(WEBHOOK_URL);
+                const data = await response.json();
+                const catalogData = Array.isArray(data) ? data[0] : data;
+                globalCatalog = catalogData.catalog;
+
+                console.log("Catalogue chargé :", globalCatalog);
+
+                // Remplir les sélecteurs avec les données réelles
+                populateSelect('select-burger', globalCatalog.products);
+                populateSelect('select-side', globalCatalog.products);
+                populateSelect('select-drink', globalCatalog.products);
+
+            } catch (error) {
+                console.error("Erreur de chargement :", error);
+                alert("Erreur lors de la récupération des données via n8n.");
+            }
+        }
+
+        function populateSelect(elementId, items) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = '<option value="">-- Sélectionner --</option>';
             
-            // n8n renvoie un tableau avec l'objet principal à l'index 0
-            const catalogData = Array.isArray(data) ? data[0] : data;
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.name;
+                select.appendChild(option);
+            });
+        }
+
+        function calculateBestCombo() {
+            const burger = document.getElementById('select-burger').value;
+            if (!burger) {
+                alert("Veuillez au moins sélectionner un burger !");
+                return;
+            }
+
+            document.getElementById('results-container').classList.remove('hidden');
             
-            console.log("Catalogue chargé :", catalogData);
-            
-            document.getElementById('catalog-container').innerHTML = `
-                <p class="text-green-600 font-medium">Catalogue chargé avec succès ! 
-                (${catalogData.stats.totalMenus} menus, ${catalogData.stats.totalProducts} produits)</p>
-            `;
-        } catch (error) {
-            console.error("Erreur de chargement :", error);
-            document.getElementById('catalog-container').innerHTML = `
-                <p class="text-red-500">Erreur lors de la récupération des données via n8n : ${error.message}</p>
+            // Affichage du Top 3 (Le meilleur prix au centre avec effet visuel)
+            const podiumGrid = document.getElementById('podium-grid');
+            podiumGrid.innerHTML = `
+                <!-- 2ème position (Gauche) -->
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400 text-center">
+                    <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-lg mt-2">Achat au Détail</h3>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">13,50 €</p>
+                    <p class="text-xs text-gray-500 mt-1">Burger seul + Frites + Boisson séparés</p>
+                </div>
+                <!-- 1ère position (Centre / Mis en avant) -->
+                <div class="bg-white p-6 rounded-lg shadow-2xl border-t-4 border-orange-500 transform md:-translate-y-4 text-center">
+                    <span class="text-xs font-bold text-orange-500 tracking-wider">🏆 MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-xl mt-2">Menu Best Of</h3>
+                    <p class="text-3xl font-extrabold text-orange-600 mt-2">10,90 €</p>
+                    <p class="text-xs text-gray-500 mt-1">Le menu complet le plus rentable</p>
+                </div>
+                <!-- 3ème position (Droite) -->
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600 text-center">
+                    <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-lg mt-2">Menu King Size</h3>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">14,20 €</p>
+                    <p class="text-xs text-gray-500 mt-1">Format maxi</p>
+                </div>
             `;
         }
-    }
 
-    function calculateBestCombo() {
-        document.getElementById('results-container').classList.remove('hidden');
-        
-        const podiumGrid = document.getElementById('podium-grid');
-        podiumGrid.innerHTML = `
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400">
-                <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
-                <h3 class="font-bold text-lg">Option A</h3>
-                <p class="text-2xl font-extrabold text-gray-700 mt-2">12,50 €</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-orange-500 transform md:-translate-y-4">
-                <span class="text-xs font-bold text-orange-500">🏆 MEILLEUR PRIX</span>
-                <h3 class="font-bold text-xl">Option Gagnante</h3>
-                <p class="text-3xl font-extrabold text-orange-600 mt-2">10,90 €</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600">
-                <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
-                <h3 class="font-bold text-lg">Option B</h3>
-                <p class="text-2xl font-extrabold text-gray-700 mt-2">13,20 €</p>
-            </div>
-        `;
-    }
-
-    loadCatalog();
-</script>
+        // Lancer le chargement au démarrage
+        loadCatalog();
+    </script>
 </body>
 </html>
