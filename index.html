@@ -53,106 +53,140 @@
         </div>
     </div>
 
-<script>
-    const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
-    let globalCatalog = null;
+    <script>
+        const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
+        let globalCatalog = null;
 
-    async function loadCatalog() {
-        try {
-            const response = await fetch(WEBHOOK_URL);
-            const data = await response.json();
-            const catalogData = Array.isArray(data) ? data[0] : data;
-            globalCatalog = catalogData.catalog;
+        async function loadCatalog() {
+            try {
+                const response = await fetch(WEBHOOK_URL);
+                const data = await response.json();
+                const catalogData = Array.isArray(data) ? data[0] : data;
+                globalCatalog = catalogData.catalog;
 
-            console.log("Catalogue chargé :", globalCatalog);
+                // Filtrage intelligent par catégorie / mots-clés
+                const burgers = globalCatalog.products.filter(p => {
+                    const name = p.name.toLowerCase();
+                    return !name.includes('coca') && !name.includes('fanta') && !name.includes('sprite') && 
+                           !name.includes('frite') && !name.includes('eau') && !name.includes('fuse tea') &&
+                           !name.includes('nuggets') && !name.includes('king fusion') && !name.includes('sundae');
+                });
 
-            // Filtrer les produits selon leur nom ou leur catégorie
-            const burgers = globalCatalog.products.filter(p => {
-                const name = p.name.toLowerCase();
-                // On filtre pour ne garder que ce qui ressemble à un burger/plat principal
-                return !name.includes('coca') && !name.includes('fanta') && !name.includes('sprite') && 
-                       !name.includes('frite') && !name.includes('eau') && !name.includes('fuse tea') &&
-                       !name.includes('nuggets') && !name.includes('king fusion') && !name.includes('sundae');
-            });
+                const sides = globalCatalog.products.filter(p => {
+                    const name = p.name.toLowerCase();
+                    return name.includes('frite') || name.includes('king fries') || name.includes('onion') || 
+                           name.includes('nuggets') || name.includes('chili cheese') || name.includes('potatoes');
+                });
 
-            const sides = globalCatalog.products.filter(p => {
-                const name = p.name.toLowerCase();
-                // Accompagnements : frites, king fries, onion rings, nuggets, etc.
-                return name.includes('frite') || name.includes('king fries') || name.includes('onion') || 
-                       name.includes('nuggets') || name.includes('chili cheese') || name.includes('potatoes');
-            });
+                const drinks = globalCatalog.products.filter(p => {
+                    const name = p.name.toLowerCase();
+                    return name.includes('coca') || name.includes('fanta') || name.includes('sprite') || 
+                           name.includes('eau') || name.includes('fuse tea') || name.includes('oasis') || 
+                           name.includes('sundae') || name.includes('fusion') || name.includes('glace');
+                });
 
-            const drinks = globalCatalog.products.filter(p => {
-                const name = p.name.toLowerCase();
-                // Boissons et desserts
-                return name.includes('coca') || name.includes('fanta') || name.includes('sprite') || 
-                       name.includes('eau') || name.includes('fuse tea') || name.includes('oasis') || 
-                       name.includes('sundae') || name.includes('fusion') || name.includes('glace');
-            });
+                populateSelect('select-burger', burgers.length > 0 ? burgers : globalCatalog.products);
+                populateSelect('select-side', sides.length > 0 ? sides : globalCatalog.products);
+                populateSelect('select-drink', drinks.length > 0 ? drinks : globalCatalog.products);
 
-            // Remplir les listes de manière spécifique
-            populateSelect('select-burger', burgers.length > 0 ? burgers : globalCatalog.products);
-            populateSelect('select-side', sides.length > 0 ? sides : globalCatalog.products);
-            populateSelect('select-drink', drinks.length > 0 ? drinks : globalCatalog.products);
-
-        } catch (error) {
-            console.error("Erreur de chargement :", error);
-            alert("Erreur lors de la récupération des données via n8n.");
-        }
-    }
-
-    function populateSelect(elementId, items) {
-        const select = document.getElementById(elementId);
-        select.innerHTML = '<option value="">-- Sélectionner --</option>';
-        
-        items.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.id;
-            option.textContent = `${item.name} ${item.price > 0 ? '(' + item.price.toFixed(2) + ' €)' : ''}`;
-            select.appendChild(option);
-        });
-    }
-
-    function calculateBestCombo() {
-        const burgerId = document.getElementById('select-burger').value;
-        if (!burgerId) {
-            alert("Veuillez au moins sélectionner un burger !");
-            return;
+            } catch (error) {
+                console.error("Erreur de chargement :", error);
+                alert("Erreur lors de la récupération des données via n8n.");
+            }
         }
 
-        document.getElementById('results-container').classList.remove('hidden');
-        
-        const selectedBurger = globalCatalog.products.find(p => p.id === burgerId);
-        const burgerPrice = selectedBurger && selectedBurger.price > 0 ? selectedBurger.price : 8.00;
-        
-        const aLaCartePrice = burgerPrice + 3.50 + 3.00; 
-        const menuMPrice = burgerPrice + 2.50; 
-        const menuKingSizePrice = menuMPrice + 1.50; 
+        function populateSelect(elementId, items) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = '<option value="">-- Sélectionner --</option>';
+            
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = `${item.name} ${item.price > 0 ? '(' + item.price.toFixed(2) + ' €)' : ''}`;
+                select.appendChild(option);
+            });
+        }
 
-        const podiumGrid = document.getElementById('podium-grid');
-        podiumGrid.innerHTML = `
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400 text-center">
-                <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
-                <h3 class="font-bold text-lg mt-2">Achat au Détail</h3>
-                <p class="text-2xl font-extrabold text-gray-700 mt-2">${aLaCartePrice.toFixed(2)} €</p>
-                <p class="text-xs text-gray-500 mt-1">Articles achetés séparément</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-2xl border-t-4 border-orange-500 transform md:-translate-y-4 text-center">
-                <span class="text-xs font-bold text-orange-500 tracking-wider">🏆 MEILLEUR PRIX</span>
-                <h3 class="font-bold text-xl mt-2">Menu M</h3>
-                <p class="text-3xl font-extrabold text-orange-600 mt-2">${menuMPrice.toFixed(2)} €</p>
-                <p class="text-xs text-gray-500 mt-1">La formule la plus rentable</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600 text-center">
-                <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
-                <h3 class="font-bold text-lg mt-2">Menu King Size</h3>
-                <p class="text-2xl font-extrabold text-gray-700 mt-2">${menuKingSizePrice.toFixed(2)} €</p>
-                <p class="text-xs text-gray-500 mt-1">Format maxi</p>
-            </div>
-        `;
-    }
+        function calculateBestCombo() {
+            const burgerId = document.getElementById('select-burger').value;
+            const sideId = document.getElementById('select-side').value;
+            const drinkId = document.getElementById('select-drink').value;
 
-    loadCatalog();
-</script>
+            if (!burgerId) {
+                alert("Veuillez au moins sélectionner un burger !");
+                return;
+            }
+
+            document.getElementById('results-container').classList.remove('hidden');
+            
+            // Récupération des objets et de leurs vrais prix
+            const burger = globalCatalog.products.find(p => p.id === burgerId) || { name: 'Burger', price: 8.00 };
+            const side = globalCatalog.products.find(p => p.id === sideId) || { name: 'Accompagnement', price: 3.50 };
+            const drink = globalCatalog.products.find(p => p.id === drinkId) || { name: 'Boisson', price: 3.00 };
+
+            const burgerPrice = burger.price > 0 ? burger.price : 8.00;
+            const sidePrice = side.price > 0 ? side.price : 3.50;
+            const drinkPrice = drink.price > 0 ? drink.price : 3.00;
+
+            // Calculs des différentes options de commande
+            const priceRetail = burgerPrice + sidePrice + drinkPrice;
+            const priceMenuM = burgerPrice + 2.50; // Estimation standard menu M
+            const priceMenuLarge = priceMenuM + 1.50; // Supplément King Size
+
+            // Tableau des formules pour tri automatique par prix croissant
+            let formulas = [
+                {
+                    title: "Achat au Détail",
+                    price: priceRetail,
+                    desc: `${burger.name} + ${side.name} + ${drink.name}`
+                },
+                {
+                    title: "Menu M (Standard)",
+                    price: priceMenuM,
+                    desc: `Formule Menu M avec ${burger.name}`
+                },
+                {
+                    title: "Menu King Size",
+                    price: priceMenuLarge,
+                    desc: `Formule grand format avec ${burger.name}`
+                }
+            ];
+
+            // Tri du moins cher au plus cher
+            formulas.sort((a, b) => a.price - b.price);
+
+            // Placement : le moins cher [0] va au centre (1ère position), les autres aux ailes
+            const best = formulas[0];
+            const second = formulas[1];
+            const third = formulas[2];
+
+            const podiumGrid = document.getElementById('podium-grid');
+            podiumGrid.innerHTML = `
+                <!-- 2ème position (Gauche) -->
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400 text-center">
+                    <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-lg mt-2">${second.title}</h3>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">${second.price.toFixed(2)} €</p>
+                    <p class="text-xs text-gray-500 mt-1">${second.desc}</p>
+                </div>
+                <!-- 1ère position (Centre / Mis en avant - Le moins cher) -->
+                <div class="bg-white p-6 rounded-lg shadow-2xl border-t-4 border-orange-500 transform md:-translate-y-4 text-center">
+                    <span class="text-xs font-bold text-orange-500 tracking-wider">🏆 MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-xl mt-2">${best.title}</h3>
+                    <p class="text-3xl font-extrabold text-orange-600 mt-2">${best.price.toFixed(2)} €</p>
+                    <p class="text-xs text-gray-500 mt-1">${best.desc}</p>
+                </div>
+                <!-- 3ème position (Droite) -->
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600 text-center">
+                    <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-lg mt-2">${third.title}</h3>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">${third.price.toFixed(2)} €</p>
+                    <p class="text-xs text-gray-500 mt-1">${third.desc}</p>
+                </div>
+            `;
+        }
+
+        loadCatalog();
+    </script>
 </body>
 </html>
