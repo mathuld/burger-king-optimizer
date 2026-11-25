@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimize Burger King Price</title>
+    <!-- Tailwind CSS pour un design rapide et propre -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-orange-600 mb-8">🍔 Burger King Combo Optimizer</h1>
+
+        <!-- Section Sélection -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">1. Que veux-tu manger ?</h2>
+            <div id="catalog-container" class="space-y-4">
+                <p class="text-gray-500">Chargement du catalogue depuis n8n...</p>
+            </div>
+            <button onclick="calculateBestCombo()" class="mt-6 w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition">
+                Trouver les meilleurs combos 🚀
+            </button>
+        </div>
+
+        <!-- Section Résultats (Top 3) -->
+        <div id="results-container" class="hidden">
+            <h2 class="text-xl font-semibold mb-4 text-center">2. Top 3 des formules les plus rentables</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" id="podium-grid">
+                <!-- Le meilleur prix (centre sur desktop) sera injecté ici -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices'; // Remplace par ton URL de prod
+
+        async function loadCatalog() {
+            try {
+                const response = await fetch(WEBHOOK_URL);
+                const data = await response.json();
+                console.log("Catalogue chargé :", data);
+                
+                document.getElementById('catalog-container').innerHTML = `
+                    <p class="text-green-600 font-medium">Catalogue chargé avec succès ! (${data.stats.totalMenus} menus, ${data.stats.totalProducts} produits)</p>
+                `;
+            } catch (error) {
+                console.error("Erreur de chargement :", error);
+                document.getElementById('catalog-container').innerHTML = `
+                    <p class="text-red-500">Erreur lors de la récupération des données via n8n.</p>
+                `;
+            }
+        }
+
+        function calculateBestCombo() {
+            // Afficher la section des résultats pour l'exemple
+            document.getElementById('results-container').classList.remove('hidden');
+            
+            // Simulation visuelle du Top 3 (2ème position, 1er au centre, 3ème position)
+            const podiumGrid = document.getElementById('podium-grid');
+            podiumGrid.innerHTML = `
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400">
+                    <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-lg">Option A</h3>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">12,50 €</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-orange-500 transform md:-translate-y-4">
+                    <span class="text-xs font-bold text-orange-500">🏆 MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-xl">Option Gagnante</h3>
+                    <p class="text-3xl font-extrabold text-orange-600 mt-2">10,90 €</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600">
+                    <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
+                    <h3 class="font-bold text-lg">Option B</h3>
+                    <p class="text-2xl font-extrabold text-gray-700 mt-2">13,20 €</p>
+                </div>
+            `;
+        }
+
+        // Lancer le chargement au démarrage
+        loadCatalog();
+    </script>
+</body>
+</html>
