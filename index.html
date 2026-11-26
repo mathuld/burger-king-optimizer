@@ -1,43 +1,85 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Burger King Combo Optimizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
     <style>
-        :root {
+        html {
+            color-scheme: light;
+        }
+        html.dark {
             color-scheme: dark;
         }
-        /* Personnalisation discrète des barres de défilement */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        ::-webkit-scrollbar-track {
+        html:not(.dark) ::-webkit-scrollbar-track {
+            background: #f5f5f4;
+        }
+        html:not(.dark) ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 9999px;
+        }
+        html.dark ::-webkit-scrollbar-track {
             background: #171717;
         }
-        ::-webkit-scrollbar-thumb {
+        html.dark ::-webkit-scrollbar-thumb {
             background: #404040;
             border-radius: 9999px;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #f97316;
         }
-        select option, select optgroup {
+        html:not(.dark) select option, html:not(.dark) select optgroup {
+            background-color: #ffffff;
+            color: #1c1917;
+        }
+        html.dark select option, html.dark select optgroup {
             background-color: #171717;
             color: #f5f5f5;
         }
     </style>
+    <script>
+        // Appliquer le thème immédiatement pour éviter tout flash blanc au chargement
+        (function () {
+            const savedTheme = localStorage.getItem('bk_optimizer_theme');
+            const isDark = savedTheme ? savedTheme === 'dark' : true; // Sombre par défaut
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
 </head>
-<body class="bg-neutral-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-950/25 via-neutral-950 to-neutral-950 min-h-screen py-6 px-4 text-neutral-100 antialiased">
+<body class="bg-stone-100 dark:bg-neutral-950 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-orange-950/25 dark:via-neutral-950 dark:to-neutral-950 min-h-screen py-6 px-4 text-stone-800 dark:text-neutral-100 antialiased transition-colors duration-200">
     <div class="max-w-6xl mx-auto">
-        <!-- En-tête -->
-        <header class="text-center mb-6">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-orange-500 tracking-tight drop-shadow-sm">
+        <!-- En-tête + Switch Thème -->
+        <header class="relative flex flex-col items-center text-center mb-6">
+            <div class="w-full flex justify-end mb-2 sm:mb-0 sm:absolute sm:top-0 sm:right-0">
+                <button
+                    type="button"
+                    id="theme-toggle-btn"
+                    onclick="toggleTheme()"
+                    aria-label="Basculer entre le mode sombre et le mode lumière"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-900 text-stone-700 dark:text-neutral-200 border border-stone-300 dark:border-neutral-700 hover:border-orange-500 shadow-sm transition cursor-pointer select-none"
+                >
+                    <span id="theme-icon">☀️</span>
+                    <span id="theme-label">Mode lumière</span>
+                    <span class="relative inline-flex h-4 w-7 items-center rounded-full bg-orange-500 transition-colors" id="theme-track">
+                        <span class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform translate-x-3.5" id="theme-thumb"></span>
+                    </span>
+                </button>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-extrabold text-orange-600 dark:text-orange-500 tracking-tight">
                 🍔 Burger King Combo Optimizer
             </h1>
-            <p class="text-sm text-neutral-400 mt-1" id="catalog-status">
+            <p class="text-sm text-stone-500 dark:text-neutral-400 mt-1" id="catalog-status">
                 Initialisation...
             </p>
         </header>
@@ -45,17 +87,17 @@
         <!-- Barre supérieure : Restaurant + Couronnes Kingdom -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
             <!-- Bloc Restaurant (7 colonnes) -->
-            <div class="lg:col-span-7 bg-neutral-900/90 p-5 rounded-2xl shadow-xl border border-neutral-800 flex flex-col justify-between gap-3">
+            <div class="lg:col-span-7 bg-white dark:bg-neutral-900/90 p-5 rounded-2xl shadow-md dark:shadow-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between gap-3">
                 <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-400 flex items-center justify-center text-xl shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl shrink-0">
                         📍
                     </div>
                     <div class="min-w-0">
-                        <div class="text-xs font-bold uppercase tracking-wider text-neutral-500">Restaurant sélectionné</div>
-                        <div class="font-extrabold text-neutral-100 text-base truncate" id="current-store-name">
+                        <div class="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-neutral-500">Restaurant sélectionné</div>
+                        <div class="font-extrabold text-stone-900 dark:text-neutral-100 text-base truncate" id="current-store-name">
                             Chargement du restaurant...
                         </div>
-                        <div class="text-xs text-neutral-400 truncate" id="current-store-address"></div>
+                        <div class="text-xs text-stone-500 dark:text-neutral-400 truncate" id="current-store-address"></div>
                     </div>
                 </div>
 
@@ -67,15 +109,15 @@
                             oninput="handleStoreSearch()"
                             onfocus="handleStoreSearch()"
                             placeholder="🔎 Changer de BK (ville, code postal, nom...)"
-                            class="w-full px-3 py-2 text-sm bg-neutral-950 text-neutral-100 placeholder-neutral-500 border border-neutral-700 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
+                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-950 text-stone-800 dark:text-neutral-100 placeholder-stone-400 dark:placeholder-neutral-500 border border-stone-300 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
                         />
-                        <div id="store-search-results" class="hidden absolute z-30 mt-1 w-full bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto"></div>
+                        <div id="store-search-results" class="hidden absolute z-30 mt-1 w-full bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto"></div>
                     </div>
                     <button
                         type="button"
                         onclick="findNearestStores()"
                         id="btn-geoloc"
-                        class="px-3.5 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 rounded-xl text-sm font-semibold transition whitespace-nowrap"
+                        class="px-3.5 py-2 bg-stone-100 dark:bg-neutral-800 hover:bg-stone-200 dark:hover:bg-neutral-700 text-stone-800 dark:text-neutral-200 border border-stone-300 dark:border-neutral-700 rounded-xl text-sm font-semibold transition whitespace-nowrap"
                     >
                         📍 Autour de moi
                     </button>
@@ -83,15 +125,15 @@
             </div>
 
             <!-- Bloc Couronnes Kingdom (5 colonnes) -->
-            <div class="lg:col-span-5 bg-gradient-to-br from-amber-950/40 via-neutral-900 to-orange-950/30 p-5 rounded-2xl shadow-xl border border-amber-500/30 flex flex-col justify-between gap-3">
+            <div class="lg:col-span-5 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:via-neutral-900 dark:to-orange-950/30 p-5 rounded-2xl shadow-md dark:shadow-xl border border-amber-200 dark:border-amber-500/30 flex flex-col justify-between gap-3">
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 flex items-center justify-center text-xl shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-amber-400/30 dark:bg-amber-500/20 border border-transparent dark:border-amber-500/30 text-amber-800 dark:text-amber-300 flex items-center justify-center text-xl shrink-0">
                             👑
                         </div>
                         <div>
-                            <div class="text-xs font-bold uppercase tracking-wider text-amber-400">Programme Kingdom</div>
-                            <div class="font-extrabold text-neutral-100 text-base">Mes Couronnes disponibles</div>
+                            <div class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">Programme Kingdom</div>
+                            <div class="font-extrabold text-stone-900 dark:text-neutral-100 text-base">Mes Couronnes disponibles</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -103,7 +145,7 @@
                             step="5"
                             value="0"
                             oninput="handleCrownsChange(this.value)"
-                            class="w-24 px-3 py-1.5 text-right font-black text-lg text-amber-300 bg-neutral-950 border-2 border-amber-500/50 rounded-xl focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                            class="w-24 px-3 py-1.5 text-right font-black text-lg text-amber-900 dark:text-amber-300 bg-white dark:bg-neutral-950 border-2 border-amber-300 dark:border-amber-500/50 rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-amber-400 focus:outline-none"
                         />
                         <span class="text-lg">👑</span>
                     </div>
@@ -111,16 +153,16 @@
 
                 <div>
                     <div class="flex flex-wrap gap-1.5 mb-2">
-                        <button type="button" onclick="setCrowns(0)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 text-neutral-400 transition">0</button>
-                        <button type="button" onclick="setCrowns(40)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 transition">40</button>
-                        <button type="button" onclick="setCrowns(80)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 transition">80</button>
-                        <button type="button" onclick="setCrowns(120)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 transition">120</button>
-                        <button type="button" onclick="setCrowns(135)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 transition">135</button>
-                        <button type="button" onclick="setCrowns(150)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 transition">150</button>
-                        <button type="button" onclick="setCrowns(200)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 transition">200</button>
-                        <button type="button" onclick="setCrowns(240)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-neutral-900 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 transition">240+</button>
+                        <button type="button" onclick="setCrowns(0)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-neutral-700 hover:bg-amber-100 dark:hover:bg-neutral-800 text-stone-600 dark:text-neutral-400 transition">0</button>
+                        <button type="button" onclick="setCrowns(40)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 transition">40</button>
+                        <button type="button" onclick="setCrowns(80)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 transition">80</button>
+                        <button type="button" onclick="setCrowns(120)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 transition">120</button>
+                        <button type="button" onclick="setCrowns(135)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 transition">135</button>
+                        <button type="button" onclick="setCrowns(150)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 transition">150</button>
+                        <button type="button" onclick="setCrowns(200)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 transition">200</button>
+                        <button type="button" onclick="setCrowns(240)" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 transition">240+</button>
                     </div>
-                    <p class="text-xs text-amber-200/90 font-medium" id="crowns-tier-info">
+                    <p class="text-xs text-amber-900 dark:text-amber-200/90 font-medium" id="crowns-tier-info">
                         Entre ton solde de couronnes pour inclure les produits et menus offerts.
                     </p>
                 </div>
@@ -128,98 +170,98 @@
         </div>
 
         <!-- Section 1 : Sélection des envies -->
-        <div class="bg-neutral-900/90 p-6 rounded-2xl shadow-xl border border-neutral-800 mb-8">
+        <div class="bg-white dark:bg-neutral-900/90 p-6 rounded-2xl shadow-md dark:shadow-xl border border-stone-200 dark:border-neutral-800 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
-                <h2 class="text-xl font-bold text-neutral-100">1. Sélectionne ce que tu veux manger</h2>
+                <h2 class="text-xl font-bold text-stone-800 dark:text-neutral-100">1. Sélectionne ce que tu veux manger</h2>
                 <div class="relative w-full md:w-80">
                     <input
                         type="text"
                         id="quick-search"
                         oninput="handleQuickSearch()"
                         placeholder="🔍 Rechercher un produit (Frites, Coca, Whopper...)"
-                        class="w-full pl-3 pr-3 py-2 text-sm bg-neutral-950 text-neutral-100 placeholder-neutral-500 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
+                        class="w-full pl-3 pr-3 py-2 text-sm bg-white dark:bg-neutral-950 text-stone-800 dark:text-neutral-100 placeholder-stone-400 dark:placeholder-neutral-500 border border-stone-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
                     />
-                    <div id="quick-search-results" class="hidden absolute z-20 mt-1 w-full bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl max-h-72 overflow-y-auto"></div>
+                    <div id="quick-search-results" class="hidden absolute z-20 mt-1 w-full bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-700 rounded-lg shadow-2xl max-h-72 overflow-y-auto"></div>
                 </div>
             </div>
 
             <!-- 4 Catégories de produits -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-neutral-950/70 p-3.5 rounded-xl border border-neutral-800 flex flex-col justify-between">
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
-                        <label class="block text-sm font-bold text-neutral-200 mb-2">🍔 Burgers, Wraps & Box</label>
-                        <select id="select-main" class="w-full p-2 text-sm border border-neutral-700 rounded-lg bg-neutral-900 text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍔 Burgers, Wraps & Box</label>
+                        <select id="select-main" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir un plat --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-main')" class="w-full bg-orange-500/15 border border-orange-500/30 text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-500/25 transition">
+                    <button onclick="addFromSelect('select-main')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
 
-                <div class="bg-neutral-950/70 p-3.5 rounded-xl border border-neutral-800 flex flex-col justify-between">
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
-                        <label class="block text-sm font-bold text-neutral-200 mb-2">🍟 Frites, Nuggets & Snacks</label>
-                        <select id="select-side" class="w-full p-2 text-sm border border-neutral-700 rounded-lg bg-neutral-900 text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍟 Frites, Nuggets & Snacks</label>
+                        <select id="select-side" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir un snack / side --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-side')" class="w-full bg-orange-500/15 border border-orange-500/30 text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-500/25 transition">
+                    <button onclick="addFromSelect('select-side')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
 
-                <div class="bg-neutral-950/70 p-3.5 rounded-xl border border-neutral-800 flex flex-col justify-between">
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
-                        <label class="block text-sm font-bold text-neutral-200 mb-2">🥤 Boissons & Cafés</label>
-                        <select id="select-drink" class="w-full p-2 text-sm border border-neutral-700 rounded-lg bg-neutral-900 text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🥤 Boissons & Cafés</label>
+                        <select id="select-drink" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir une boisson --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-drink')" class="w-full bg-orange-500/15 border border-orange-500/30 text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-500/25 transition">
+                    <button onclick="addFromSelect('select-drink')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
 
-                <div class="bg-neutral-950/70 p-3.5 rounded-xl border border-neutral-800 flex flex-col justify-between">
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
-                        <label class="block text-sm font-bold text-neutral-200 mb-2">🍦 Glaces, Desserts & Sauces</label>
-                        <select id="select-sweet" class="w-full p-2 text-sm border border-neutral-700 rounded-lg bg-neutral-900 text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍦 Glaces, Desserts & Sauces</label>
+                        <select id="select-sweet" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir dessert / sauce --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-sweet')" class="w-full bg-orange-500/15 border border-orange-500/30 text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-500/25 transition">
+                    <button onclick="addFromSelect('select-sweet')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
             </div>
 
             <!-- Options d'optimisation -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-neutral-950/60 border border-neutral-800 rounded-xl p-3.5 mb-6 text-xs sm:text-sm text-neutral-300">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-stone-50 dark:bg-neutral-950/60 border border-stone-200 dark:border-neutral-800 rounded-xl p-3.5 mb-6 text-xs sm:text-sm text-stone-700 dark:text-neutral-300">
                 <label class="flex items-start gap-2 cursor-pointer select-none">
-                    <input type="checkbox" id="opt-upgrades" checked onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-500 rounded shrink-0">
-                    <span><b class="text-neutral-100">Autoriser la taille supérieure</b> si plus grand revient moins cher</span>
+                    <input type="checkbox" id="opt-upgrades" checked onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-600 dark:accent-orange-500 rounded shrink-0">
+                    <span><b class="text-stone-900 dark:text-neutral-100">Autoriser la taille supérieure</b> si plus grand revient moins cher</span>
                 </label>
                 <label class="flex items-start gap-2 cursor-pointer select-none">
-                    <input type="checkbox" id="opt-kids" checked onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-500 rounded shrink-0">
-                    <span><b class="text-neutral-100">Inclure les Menus Enfants</b> (King Junior / King JR+)</span>
+                    <input type="checkbox" id="opt-kids" checked onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-600 dark:accent-orange-500 rounded shrink-0">
+                    <span><b class="text-stone-900 dark:text-neutral-100">Inclure les Menus Enfants</b> (King Junior / King JR+)</span>
                 </label>
                 <label class="flex items-start gap-2 cursor-pointer select-none">
-                    <input type="checkbox" id="opt-multi-crowns" onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-amber-500 rounded shrink-0">
-                    <span><b class="text-neutral-100">Cumuler plusieurs offres Kingdom</b> <span class="text-neutral-500">(plusieurs tickets séparés sur la borne)</span></span>
+                    <input type="checkbox" id="opt-multi-crowns" onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-amber-600 dark:accent-amber-500 rounded shrink-0">
+                    <span><b class="text-stone-900 dark:text-neutral-100">Cumuler plusieurs offres Kingdom</b> <span class="text-stone-500">(plusieurs tickets séparés sur la borne)</span></span>
                 </label>
             </div>
 
             <!-- Panier -->
-            <div class="border-t border-neutral-800 pt-4 mb-6">
+            <div class="border-t border-stone-200 dark:border-neutral-800 pt-4 mb-6">
                 <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-base font-bold text-neutral-200">🛒 Ton Panier d'envies</h3>
-                    <button onclick="clearCart()" id="btn-clear-cart" class="hidden text-xs text-red-400 hover:text-red-300 hover:underline font-semibold">
+                    <h3 class="text-base font-bold text-stone-700 dark:text-neutral-200">🛒 Ton Panier d'envies</h3>
+                    <button onclick="clearCart()" id="btn-clear-cart" class="hidden text-xs text-red-600 dark:text-red-400 hover:underline font-semibold">
                         Vider le panier
                     </button>
                 </div>
-                <div id="cart-list" class="bg-neutral-950/70 p-4 rounded-xl border border-neutral-800 text-sm text-neutral-300 min-h-[64px]">
-                    <span class="italic text-neutral-500">Ton panier est vide... Tu peux choisir une taille précise ou « 📏 Peu importe la taille » !</span>
+                <div id="cart-list" class="bg-stone-50 dark:bg-neutral-950/70 p-4 rounded-xl border border-stone-200 dark:border-neutral-800 text-sm text-stone-600 dark:text-neutral-300 min-h-[64px]">
+                    <span class="italic text-stone-400 dark:text-neutral-500">Ton panier est vide... Tu peux choisir une taille précise ou « 📏 Peu importe la taille » !</span>
                 </div>
             </div>
 
@@ -227,7 +269,7 @@
                 id="btn-calculate"
                 onclick="calculateBestCombinations()"
                 disabled
-                class="w-full bg-gradient-to-r from-orange-600 to-amber-600 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 text-white py-3.5 rounded-xl font-extrabold text-base hover:from-orange-500 hover:to-amber-500 transition shadow-lg shadow-orange-950/50"
+                class="w-full bg-orange-600 dark:bg-gradient-to-r dark:from-orange-600 dark:to-amber-600 disabled:bg-stone-300 dark:disabled:from-neutral-800 dark:disabled:to-neutral-800 disabled:text-stone-500 text-white py-3.5 rounded-xl font-extrabold text-base hover:bg-orange-700 dark:hover:from-orange-500 dark:hover:to-amber-500 transition shadow-lg dark:shadow-orange-950/50"
             >
                 Calculer le vrai Top 3 des prix sur la borne 🚀
             </button>
@@ -235,8 +277,8 @@
 
         <!-- Section 2 : Résultats Podium Top 3 -->
         <div id="results-container" class="hidden">
-            <div id="retail-banner" class="bg-neutral-900 border border-neutral-800 rounded-xl p-4 mb-6 text-center shadow-md"></div>
-            <h2 class="text-2xl font-extrabold mb-6 text-center text-neutral-100">
+            <div id="retail-banner" class="bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 rounded-xl p-4 mb-6 text-center shadow-sm dark:shadow-md"></div>
+            <h2 class="text-2xl font-extrabold mb-6 text-center text-stone-800 dark:text-neutral-100">
                 🏆 Top 3 des combinaisons exactes à commander sur la borne
             </h2>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch" id="podium-grid"></div>
@@ -247,7 +289,40 @@
         const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
         const STORAGE_STORE_KEY = 'bk_optimizer_selected_store';
         const STORAGE_CROWNS_KEY = 'bk_optimizer_crowns';
+        const STORAGE_THEME_KEY = 'bk_optimizer_theme';
         const DEFAULT_STORE_ID = 'K1376';
+
+        // =========================================================
+        // SWITCH MODE SOMBRE / MODE LUMIÈRE
+        // =========================================================
+        function updateThemeSwitchUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const iconEl = document.getElementById('theme-icon');
+            const labelEl = document.getElementById('theme-label');
+            const trackEl = document.getElementById('theme-track');
+            const thumbEl = document.getElementById('theme-thumb');
+
+            if (!iconEl || !labelEl || !trackEl || !thumbEl) return;
+
+            if (isDark) {
+                iconEl.textContent = '☀️';
+                labelEl.textContent = 'Mode lumière';
+                trackEl.className = 'relative inline-flex h-4 w-7 items-center rounded-full bg-orange-500 transition-colors';
+                thumbEl.className = 'inline-block h-3 w-3 transform rounded-full bg-white transition-transform translate-x-3.5';
+            } else {
+                iconEl.textContent = '🌙';
+                labelEl.textContent = 'Mode sombre';
+                trackEl.className = 'relative inline-flex h-4 w-7 items-center rounded-full bg-stone-300 transition-colors';
+                thumbEl.className = 'inline-block h-3 w-3 transform rounded-full bg-white transition-transform translate-x-0.5';
+            }
+        }
+
+        function toggleTheme() {
+            const nextDark = !document.documentElement.classList.contains('dark');
+            document.documentElement.classList.toggle('dark', nextDark);
+            localStorage.setItem(STORAGE_THEME_KEY, nextDark ? 'dark' : 'light');
+            updateThemeSwitchUI();
+        }
 
         // Barème Kingdom de secours (si l'appel ?mode=kingdom échoue)
         const FALLBACK_KINGDOM_LEVELS = [
@@ -430,14 +505,14 @@
             if (!userCrowns || userCrowns < 40) {
                 infoEl.innerHTML = userCrowns === 0
                     ? `Entre ton solde de couronnes pour débloquer les récompenses gratuites.`
-                    : `Il te manque <b class="text-amber-300">${40 - userCrowns} 👑</b> pour atteindre le 1er palier (40 👑).`;
+                    : `Il te manque <b class="text-amber-950 dark:text-amber-300">${40 - userCrowns} 👑</b> pour atteindre le 1er palier (40 👑).`;
                 return;
             }
 
             const unlocked = kingdomLevels.filter(l => userCrowns >= l.minPoints);
             const highest = unlocked[unlocked.length - 1];
             const totalOffers = unlocked.reduce((sum, l) => sum + (l.offers?.length || 0), 0);
-            infoEl.innerHTML = `✅ Palier <b class="text-amber-300">« ${escapeHtml(highest.title)} » (${highest.minPoints} 👑)</b> débloqué — <b class="text-amber-300">${totalOffers} récompenses</b> testées !`;
+            infoEl.innerHTML = `✅ Palier <b class="text-amber-950 dark:text-amber-300">« ${escapeHtml(highest.title)} » (${highest.minPoints} 👑)</b> débloqué — <b class="text-amber-950 dark:text-amber-300">${totalOffers} récompenses</b> testées !`;
         }
 
         function bindKingdomRewardsToCatalog() {
@@ -623,10 +698,10 @@
             const found = allRestaurants.find(r => r.id === currentStoreId);
 
             if (found) {
-                nameEl.innerHTML = `Burger King ${escapeHtml(found.name)} <span class="text-xs font-bold bg-orange-500/20 border border-orange-500/30 text-orange-300 px-2 py-0.5 rounded-full ml-1">${escapeHtml(found.id)}</span>`;
+                nameEl.innerHTML = `Burger King ${escapeHtml(found.name)} <span class="text-xs font-bold bg-orange-100 dark:bg-orange-500/20 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 px-2 py-0.5 rounded-full ml-1">${escapeHtml(found.id)}</span>`;
                 addrEl.textContent = found.address || '';
             } else {
-                nameEl.innerHTML = `Restaurant <span class="text-xs font-bold bg-orange-500/20 border border-orange-500/30 text-orange-300 px-2 py-0.5 rounded-full ml-1">${escapeHtml(currentStoreId)}</span>`;
+                nameEl.innerHTML = `Restaurant <span class="text-xs font-bold bg-orange-100 dark:bg-orange-500/20 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 px-2 py-0.5 rounded-full ml-1">${escapeHtml(currentStoreId)}</span>`;
                 addrEl.textContent = allRestaurants.length > 0 ? 'Code restaurant personnalisé' : 'Chargement des restaurants...';
             }
         }
@@ -634,7 +709,7 @@
         function renderStoreResultsList(stores, emptyMsg = 'Aucun restaurant trouvé') {
             const box = document.getElementById('store-search-results');
             if (!stores || stores.length === 0) {
-                box.innerHTML = `<div class="p-3 text-xs text-neutral-500 italic">${escapeHtml(emptyMsg)}</div>`;
+                box.innerHTML = `<div class="p-3 text-xs text-stone-400 dark:text-neutral-500 italic">${escapeHtml(emptyMsg)}</div>`;
                 box.classList.remove('hidden');
                 return;
             }
@@ -642,20 +717,20 @@
             box.innerHTML = stores.map(r => {
                 const isSelected = r.id === currentStoreId;
                 const distBadge = typeof r._distanceKm === 'number'
-                    ? `<span class="text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">${r._distanceKm.toFixed(1).replace('.', ',')} km</span>`
-                    : `<span class="text-xs font-semibold text-neutral-500 whitespace-nowrap">${escapeHtml(r.zipCode || r.id)}</span>`;
+                    ? `<span class="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/15 border border-transparent dark:border-emerald-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">${r._distanceKm.toFixed(1).replace('.', ',')} km</span>`
+                    : `<span class="text-xs font-semibold text-stone-400 dark:text-neutral-500 whitespace-nowrap">${escapeHtml(r.zipCode || r.id)}</span>`;
 
                 return `
                     <button
                         type="button"
                         onclick="selectStore('${escapeAttr(r.id)}')"
-                        class="w-full text-left px-3.5 py-2.5 hover:bg-neutral-800 flex justify-between items-start gap-2 border-b last:border-b-0 border-neutral-800 ${isSelected ? 'bg-orange-500/10' : ''}"
+                        class="w-full text-left px-3.5 py-2.5 hover:bg-orange-50 dark:hover:bg-neutral-800 flex justify-between items-start gap-2 border-b last:border-b-0 border-stone-100 dark:border-neutral-800 ${isSelected ? 'bg-orange-50/80 dark:bg-orange-500/10' : ''}"
                     >
                         <div>
-                            <div class="font-bold text-sm text-neutral-100">
+                            <div class="font-bold text-sm text-stone-800 dark:text-neutral-100">
                                 ${isSelected ? '✓ ' : ''}${escapeHtml(r.name)}
                             </div>
-                            <div class="text-xs text-neutral-400 line-clamp-1">${escapeHtml(r.address)}</div>
+                            <div class="text-xs text-stone-500 dark:text-neutral-400 line-clamp-1">${escapeHtml(r.address)}</div>
                         </div>
                         ${distBadge}
                     </button>
@@ -823,7 +898,7 @@
             const calcBtn = document.getElementById('btn-calculate');
             calcBtn.disabled = true;
             statusEl.textContent = `⏳ Chargement des tarifs officiels du restaurant ${storeId}...`;
-            statusEl.className = 'text-sm text-orange-400 font-medium mt-1';
+            statusEl.className = 'text-sm text-orange-600 dark:text-orange-400 font-medium mt-1';
 
             try {
                 const response = await fetch(`${WEBHOOK_URL}?store=${encodeURIComponent(storeId)}`);
@@ -888,12 +963,12 @@
                 const storeObj = allRestaurants.find(r => r.id === storeId);
                 const storeLabel = storeObj ? `BK ${storeObj.name}` : storeId;
                 statusEl.textContent = `✅ Tarifs en direct de ${storeLabel} (${catalog.menus.length} menus, ${buyableProducts.length} produits)`;
-                statusEl.className = 'text-sm text-emerald-400 font-medium mt-1';
+                statusEl.className = 'text-sm text-emerald-700 dark:text-emerald-400 font-medium mt-1';
                 calcBtn.disabled = false;
             } catch (error) {
                 console.error('Erreur chargement catalogue :', error);
                 statusEl.textContent = `❌ Impossible de charger le catalogue de ce restaurant (${error.message}).`;
-                statusEl.className = 'text-sm text-red-400 font-semibold mt-1';
+                statusEl.className = 'text-sm text-red-600 dark:text-red-400 font-semibold mt-1';
             }
         }
 
@@ -993,7 +1068,7 @@
                 .slice(0, 8);
 
             if (famMatches.length === 0 && prodMatches.length === 0) {
-                box.innerHTML = `<div class="p-3 text-xs text-neutral-500 italic">Aucun produit trouvé</div>`;
+                box.innerHTML = `<div class="p-3 text-xs text-stone-400 dark:text-neutral-500 italic">Aucun produit trouvé</div>`;
                 box.classList.remove('hidden');
                 return;
             }
@@ -1002,27 +1077,27 @@
                 <button
                     type="button"
                     onclick="addCartToken('FAM:${escapeAttr(f.key)}'); closeQuickSearch();"
-                    class="w-full text-left px-3 py-2 text-sm bg-orange-500/10 hover:bg-orange-500/20 flex justify-between items-center border-b border-neutral-800"
+                    class="w-full text-left px-3 py-2 text-sm bg-orange-50/70 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 flex justify-between items-center border-b border-orange-100 dark:border-neutral-800"
                 >
                     <span>
-                        <span class="font-bold text-orange-300">📏 ${escapeHtml(f.name)}</span>
-                        <span class="text-xs text-orange-400/90 font-semibold ml-1">(Peu importe la taille)</span>
+                        <span class="font-bold text-orange-900 dark:text-orange-300">📏 ${escapeHtml(f.name)}</span>
+                        <span class="text-xs text-orange-700 dark:text-orange-400/90 font-semibold ml-1">(Peu importe la taille)</span>
                     </span>
-                    <span class="text-xs font-bold text-orange-400 ml-2 whitespace-nowrap">dès ${formatEuros(f.minAloneCents)}</span>
+                    <span class="text-xs font-bold text-orange-700 dark:text-orange-400 ml-2 whitespace-nowrap">dès ${formatEuros(f.minAloneCents)}</span>
                 </button>
             `).join('');
 
             const prodHtml = prodMatches.map(p => {
                 const rw = productRewardsById[p.id];
-                const crownTag = rw ? `<span class="text-xs text-amber-400 font-bold ml-1">(👑 ${rw.points})</span>` : '';
+                const crownTag = rw ? `<span class="text-xs text-amber-700 dark:text-amber-400 font-bold ml-1">(👑 ${rw.points})</span>` : '';
                 return `
                     <button
                         type="button"
                         onclick="addCartToken('PROD:${escapeAttr(p.id)}'); closeQuickSearch();"
-                        class="w-full text-left px-3 py-2 text-sm hover:bg-neutral-800 flex justify-between items-center border-b last:border-b-0 border-neutral-800"
+                        class="w-full text-left px-3 py-2 text-sm hover:bg-stone-100 dark:hover:bg-neutral-800 flex justify-between items-center border-b last:border-b-0 border-stone-100 dark:border-neutral-800"
                     >
-                        <span class="font-medium text-neutral-200">${escapeHtml(p.name)}${crownTag}</span>
-                        <span class="text-xs font-bold text-orange-400 ml-2 whitespace-nowrap">+ ${formatEuros(p._aloneCents)}</span>
+                        <span class="font-medium text-stone-800 dark:text-neutral-200">${escapeHtml(p.name)}${crownTag}</span>
+                        <span class="text-xs font-bold text-orange-600 dark:text-orange-400 ml-2 whitespace-nowrap">+ ${formatEuros(p._aloneCents)}</span>
                     </button>
                 `;
             }).join('');
@@ -1116,7 +1191,7 @@
 
             if (cart.length === 0) {
                 clearBtn.classList.add('hidden');
-                cartList.innerHTML = `<span class="italic text-neutral-500">Ton panier est vide... Tu peux choisir une taille précise ou « 📏 Peu importe la taille » !</span>`;
+                cartList.innerHTML = `<span class="italic text-stone-400 dark:text-neutral-500">Ton panier est vide... Tu peux choisir une taille précise ou « 📏 Peu importe la taille » !</span>`;
                 return;
             }
 
@@ -1143,7 +1218,7 @@
                     unitSubtext = `${formatEuros(unitCents)} / unité`;
                     const rw = productRewardsById[p.id];
                     if (rw) {
-                        crownBadge = `<span class="text-xs font-bold bg-amber-500/15 border border-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full ml-1">👑 éligible ${rw.points}</span>`;
+                        crownBadge = `<span class="text-xs font-bold bg-amber-100 dark:bg-amber-500/15 border border-transparent dark:border-amber-500/30 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">👑 éligible ${rw.points}</span>`;
                     }
                 }
 
@@ -1166,7 +1241,7 @@
                     sizeSelectorHtml = `
                         <select
                             onchange="switchCartEntryMode(${idx}, this.value)"
-                            class="mt-1 sm:mt-0 sm:ml-2 text-xs font-semibold rounded-lg px-2 py-1 border ${entry.isFamily ? 'bg-orange-500/15 border-orange-500/40 text-orange-300' : 'bg-neutral-900 border-neutral-700 text-neutral-200'} focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            class="mt-1 sm:mt-0 sm:ml-2 text-xs font-semibold rounded-lg px-2 py-1 border ${entry.isFamily ? 'bg-orange-50 dark:bg-orange-500/15 border-orange-300 dark:border-orange-500/40 text-orange-800 dark:text-orange-300' : 'bg-white dark:bg-neutral-900 border-stone-300 dark:border-neutral-700 text-stone-700 dark:text-neutral-200'} focus:ring-2 focus:ring-orange-500 focus:outline-none"
                         >
                             ${optionsHtml}
                         </select>
@@ -1174,20 +1249,20 @@
                 }
 
                 return `
-                    <div class="flex flex-wrap justify-between items-center py-2.5 border-b last:border-b-0 border-neutral-800 gap-2">
+                    <div class="flex flex-wrap justify-between items-center py-2.5 border-b last:border-b-0 border-stone-200 dark:border-neutral-800 gap-2">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-1">
                             <div>
-                                <span class="font-bold text-neutral-100">${escapeHtml(title)}</span>
-                                <span class="text-xs text-neutral-400 ml-1">(${escapeHtml(unitSubtext)})</span>
+                                <span class="font-bold text-stone-800 dark:text-neutral-100">${escapeHtml(title)}</span>
+                                <span class="text-xs text-stone-500 dark:text-neutral-400 ml-1">(${escapeHtml(unitSubtext)})</span>
                                 ${crownBadge}
                             </div>
                             ${sizeSelectorHtml}
                         </div>
                         <div class="flex items-center gap-2 ml-auto">
-                            <button onclick="changeQtyByIndex(${idx}, -1)" class="w-7 h-7 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 font-bold text-neutral-200 transition">−</button>
-                            <span class="w-6 text-center font-bold text-neutral-100">${entry.qty}</span>
-                            <button onclick="changeQtyByIndex(${idx}, 1)" class="w-7 h-7 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 font-bold text-neutral-200 transition">+</button>
-                            <span class="w-20 text-right font-bold text-orange-400">${formatEuros(lineCents)}</span>
+                            <button onclick="changeQtyByIndex(${idx}, -1)" class="w-7 h-7 rounded-lg bg-stone-200 dark:bg-neutral-800 hover:bg-stone-300 dark:hover:bg-neutral-700 border border-transparent dark:border-neutral-700 font-bold text-stone-700 dark:text-neutral-200 transition">−</button>
+                            <span class="w-6 text-center font-bold text-stone-800 dark:text-neutral-100">${entry.qty}</span>
+                            <button onclick="changeQtyByIndex(${idx}, 1)" class="w-7 h-7 rounded-lg bg-stone-200 dark:bg-neutral-800 hover:bg-stone-300 dark:hover:bg-neutral-700 border border-transparent dark:border-neutral-700 font-bold text-stone-700 dark:text-neutral-200 transition">+</button>
+                            <span class="w-20 text-right font-bold text-orange-600 dark:text-orange-400">${formatEuros(lineCents)}</span>
                         </div>
                     </div>
                 `;
@@ -1195,9 +1270,9 @@
 
             cartList.innerHTML = `
                 ${rowsHtml}
-                <div class="flex justify-between items-center pt-3 mt-1 text-neutral-300 font-bold">
+                <div class="flex justify-between items-center pt-3 mt-1 text-stone-700 dark:text-neutral-300 font-bold">
                     <span>Total minimum hors menu & hors couronnes :</span>
-                    <span class="text-neutral-100">${formatEuros(totalRetailCents)}</span>
+                    <span class="text-stone-900 dark:text-neutral-100">${formatEuros(totalRetailCents)}</span>
                 </div>
             `;
         }
@@ -1664,24 +1739,24 @@
             resultsContainer.classList.remove('hidden');
 
             if (topSolutions.length === 0) {
-                podiumGrid.innerHTML = `<div class="col-span-3 text-center text-red-400 font-bold">Aucune combinaison trouvée.</div>`;
+                podiumGrid.innerHTML = `<div class="col-span-3 text-center text-red-600 dark:text-red-400 font-bold">Aucune combinaison trouvée.</div>`;
                 return;
             }
 
             const best = topSolutions[0];
             const bestSavings = retailCents - best.costCents;
             const crownsNote = best.crownsUsed > 0
-                ? ` + <span class="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold px-2.5 py-0.5 rounded-full">👑 ${best.crownsUsed} couronnes utilisées</span>`
+                ? ` + <span class="inline-block bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-300 font-extrabold px-2.5 py-0.5 rounded-full">👑 ${best.crownsUsed} couronnes utilisées</span>`
                 : '';
 
             retailBanner.innerHTML = bestSavings > 0
-                ? `<p class="text-sm md:text-base text-neutral-300">
-                     Prix hors menu & sans couronnes : <b class="line-through text-neutral-500">${formatEuros(retailCents)}</b>
-                     — Avec la combinaison #1, tu paies <b class="text-emerald-400">${formatEuros(best.costCents)}</b>
-                     soit <span class="inline-block bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-extrabold px-2.5 py-0.5 rounded-full ml-1">−${formatEuros(bestSavings)} d'économie réelle</span>${crownsNote} !
+                ? `<p class="text-sm md:text-base text-stone-700 dark:text-neutral-300">
+                     Prix hors menu & sans couronnes : <b class="line-through text-stone-500">${formatEuros(retailCents)}</b>
+                     — Avec la combinaison #1, tu paies <b class="text-emerald-700 dark:text-emerald-400">${formatEuros(best.costCents)}</b>
+                     soit <span class="inline-block bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-extrabold px-2.5 py-0.5 rounded-full ml-1">−${formatEuros(bestSavings)} d'économie réelle</span>${crownsNote} !
                    </p>`
-                : `<p class="text-sm md:text-base text-neutral-300">
-                     Prix optimal vérifié : <b class="text-orange-400">${formatEuros(best.costCents)}</b>.
+                : `<p class="text-sm md:text-base text-stone-700 dark:text-neutral-300">
+                     Prix optimal vérifié : <b class="text-orange-600 dark:text-orange-400">${formatEuros(best.costCents)}</b>.
                    </p>`;
 
             const cardsHtml = [];
@@ -1711,20 +1786,20 @@
 
             const stepsHtml = mAct.stepsDetail.map((st, sIdx) => {
                 const suppStr = st.supplementCents > 0
-                    ? ` <span class="text-xs font-bold text-orange-400">(+${formatEuros(st.supplementCents)})</span>`
-                    : (st.supplementCents < 0 && !isKingdomMenu ? ` <span class="text-xs font-bold text-emerald-400">(${formatEuros(st.supplementCents)})</span>` : '');
+                    ? ` <span class="text-xs font-bold text-orange-700 dark:text-orange-400">(+${formatEuros(st.supplementCents)})</span>`
+                    : (st.supplementCents < 0 && !isKingdomMenu ? ` <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400">(${formatEuros(st.supplementCents)})</span>` : '');
 
                 if (st.mode === 'matched') {
                     let subNote = '';
                     if (st.matchType === 'upgrade') {
-                        subNote = `<div class="text-xs text-sky-400 font-medium mt-0.5">⬆️ Taille supérieure incluse (remplace ${escapeHtml(st.wantedLabel)})</div>`;
+                        subNote = `<div class="text-xs text-sky-700 dark:text-sky-400 font-medium mt-0.5">⬆️ Taille supérieure incluse (remplace ${escapeHtml(st.wantedLabel)})</div>`;
                     } else if (st.matchType === 'any_size') {
-                        subNote = `<div class="text-xs text-orange-400 font-medium mt-0.5">📏 Format retenu pour « ${escapeHtml(st.wantedLabel)} »</div>`;
+                        subNote = `<div class="text-xs text-orange-700 dark:text-orange-400 font-medium mt-0.5">📏 Format retenu pour « ${escapeHtml(st.wantedLabel)} »</div>`;
                     }
                     return `
-                        <li class="py-1.5 border-b last:border-b-0 border-neutral-800">
-                            <div class="text-xs text-neutral-500">${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
-                            <div class="font-semibold text-neutral-100">✓ ${escapeHtml(st.prod.name)}${suppStr}</div>
+                        <li class="py-1.5 border-b last:border-b-0 border-stone-200/70 dark:border-neutral-800">
+                            <div class="text-xs text-stone-500 dark:text-neutral-500">${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
+                            <div class="font-semibold text-stone-800 dark:text-neutral-100">✓ ${escapeHtml(st.prod.name)}${suppStr}</div>
                             ${subNote}
                         </li>
                     `;
@@ -1733,10 +1808,10 @@
                 const isNoToyDiscount = normalizeText(st.prod.name).includes('rien du tout');
                 if (isNoToyDiscount && !isKingdomMenu) {
                     return `
-                        <li class="my-1.5 p-2.5 rounded-lg bg-emerald-950/50 border border-emerald-500/30">
-                            <div class="text-xs font-bold text-emerald-300">💡 ASTUCE BORNE — ${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
-                            <div class="text-xs text-emerald-200/90 mt-0.5">
-                                Sélectionne <b class="text-white">« ${escapeHtml(st.prod.name)} »</b> pour économiser <b>${formatEuros(-st.supplementCents)}</b>.
+                        <li class="my-1.5 p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-500/30">
+                            <div class="text-xs font-bold text-emerald-800 dark:text-emerald-300">💡 ASTUCE BORNE — ${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
+                            <div class="text-xs text-emerald-900 dark:text-emerald-200/90 mt-0.5">
+                                Sélectionne <b class="text-stone-950 dark:text-white">« ${escapeHtml(st.prod.name)} »</b> pour économiser <b>${formatEuros(-st.supplementCents)}</b>.
                             </div>
                         </li>
                     `;
@@ -1748,41 +1823,41 @@
                     .join(', ');
 
                 return `
-                    <li class="my-1.5 p-2.5 rounded-lg bg-amber-950/40 border border-amber-500/30">
-                        <div class="text-xs font-extrabold text-amber-300">
+                    <li class="my-1.5 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-500/30">
+                        <div class="text-xs font-extrabold text-amber-900 dark:text-amber-300">
                             🎁 PRODUIT BONUS À CHOISIR (${sIdx + 1}. ${escapeHtml(st.stepName)})
                         </div>
-                        <div class="text-xs text-amber-100/90 mt-0.5">
+                        <div class="text-xs text-amber-900 dark:text-amber-100/90 mt-0.5">
                             Inclus dans ce menu ! Choisis sur la borne :
-                            <b class="text-amber-200">${escapeHtml(otherChoices || st.prod.name)}</b>${suppStr || ' (inclus à +0,00 €)'}.
+                            <b class="text-amber-950 dark:text-amber-200">${escapeHtml(otherChoices || st.prod.name)}</b>${suppStr || ' (inclus à +0,00 €)'}.
                         </div>
                     </li>
                 `;
             }).join('');
 
             const containerStyle = isKingdomMenu
-                ? 'bg-amber-950/25 border-amber-500/40'
-                : 'bg-neutral-950/70 border-neutral-800';
+                ? 'bg-amber-50/70 dark:bg-amber-950/25 border-amber-300 dark:border-amber-500/40'
+                : 'bg-stone-50 dark:bg-neutral-950/70 border-stone-200 dark:border-neutral-800';
 
             const headerTag = isKingdomMenu
-                ? `<span class="text-xs font-extrabold uppercase tracking-wide text-amber-400">👑 Récompense Kingdom · Taille ${escapeHtml(mAct.sizeObj.size)} (−${mAct.crownsCost} 👑)</span>`
-                : `<span class="text-xs font-bold uppercase tracking-wide text-orange-400">Menu #${labelIndex} · Taille ${escapeHtml(mAct.sizeObj.size)}</span>`;
+                ? `<span class="text-xs font-extrabold uppercase tracking-wide text-amber-800 dark:text-amber-400">👑 Récompense Kingdom · Taille ${escapeHtml(mAct.sizeObj.size)} (−${mAct.crownsCost} 👑)</span>`
+                : `<span class="text-xs font-bold uppercase tracking-wide text-orange-600 dark:text-orange-400">Menu #${labelIndex} · Taille ${escapeHtml(mAct.sizeObj.size)}</span>`;
 
             const priceRight = isKingdomMenu
-                ? `<span class="font-extrabold text-sm text-emerald-400 whitespace-nowrap">${mAct.costCents === 0 ? 'OFFERT (0,00 €)' : formatEuros(mAct.costCents)}</span>`
-                : `<span class="font-extrabold text-sm text-neutral-100 whitespace-nowrap">${formatEuros(mAct.costCents)}</span>`;
+                ? `<span class="font-extrabold text-sm text-emerald-700 dark:text-emerald-400 whitespace-nowrap">${mAct.costCents === 0 ? 'OFFERT (0,00 €)' : formatEuros(mAct.costCents)}</span>`
+                : `<span class="font-extrabold text-sm text-stone-800 dark:text-neutral-100 whitespace-nowrap">${formatEuros(mAct.costCents)}</span>`;
 
             return `
                 <div class="${containerStyle} rounded-xl p-3.5 border text-left mb-3">
                     <div class="flex justify-between items-start gap-2">
                         <div>
                             ${headerTag}
-                            <h4 class="font-extrabold text-neutral-100 text-sm">${escapeHtml(mAct.menu.name)}</h4>
+                            <h4 class="font-extrabold text-stone-900 dark:text-neutral-100 text-sm">${escapeHtml(mAct.menu.name)}</h4>
                         </div>
                         ${priceRight}
                     </div>
-                    <div class="text-xs text-neutral-400 mt-1 mb-2">
-                        📍 Borne : <b class="text-neutral-200">${escapeHtml(kioskPath)}</b>
+                    <div class="text-xs text-stone-500 dark:text-neutral-400 mt-1 mb-2">
+                        📍 Borne : <b class="text-stone-700 dark:text-neutral-200">${escapeHtml(kioskPath)}</b>
                     </div>
                     <ul class="text-sm">${stepsHtml}</ul>
                 </div>
@@ -1826,61 +1901,61 @@
             const diffCents = retailCents - solution.costCents;
             let diffBadge = '';
             if (diffCents > 0) {
-                diffBadge = `<span class="inline-block bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-extrabold px-2.5 py-1 rounded-full mt-2">💰 Économie : −${formatEuros(diffCents)}</span>`;
+                diffBadge = `<span class="inline-block bg-emerald-100 dark:bg-emerald-500/15 border border-transparent dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold px-2.5 py-1 rounded-full mt-2">💰 Économie : −${formatEuros(diffCents)}</span>`;
             } else if (diffCents === 0) {
-                diffBadge = `<span class="inline-block bg-neutral-800 text-neutral-400 text-xs font-bold px-2.5 py-1 rounded-full mt-2">Prix identique au détail</span>`;
+                diffBadge = `<span class="inline-block bg-stone-100 dark:bg-neutral-800 text-stone-600 dark:text-neutral-400 text-xs font-bold px-2.5 py-1 rounded-full mt-2">Prix identique au détail</span>`;
             } else {
-                diffBadge = `<span class="inline-block bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full mt-2">+${formatEuros(-diffCents)} vs taille mini seule</span>`;
+                diffBadge = `<span class="inline-block bg-amber-100 dark:bg-amber-500/15 border border-transparent dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full mt-2">+${formatEuros(-diffCents)} vs taille mini seule</span>`;
             }
 
             const crownsBadge = solution.crownsUsed > 0
                 ? `<div class="mt-2">
-                     <span class="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-extrabold px-2.5 py-0.5 rounded-full">
+                     <span class="inline-block bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-950 dark:text-amber-300 text-xs font-extrabold px-2.5 py-0.5 rounded-full">
                        👑 ${solution.crownsUsed} couronnes utilisées (reste ${userCrowns - solution.crownsUsed} 👑)
                      </span>
                    </div>`
-                : (userCrowns >= 40 ? `<div class="mt-2"><span class="text-xs text-neutral-500 font-semibold">👑 0 couronne utilisée (garde tes ${userCrowns} 👑)</span></div>` : '');
+                : (userCrowns >= 40 ? `<div class="mt-2"><span class="text-xs text-stone-400 dark:text-neutral-500 font-semibold">👑 0 couronne utilisée (garde tes ${userCrowns} 👑)</span></div>` : '');
 
             const multiTicketWarning = solution.rewardsUsed > 1
-                ? `<div class="mb-3 p-2.5 rounded-xl bg-purple-950/50 border border-purple-500/40 text-xs text-purple-200 font-medium text-left">
-                     ⚠️ <b class="text-purple-100">${solution.rewardsUsed} récompenses Kingdom utilisées</b> : fais <b class="text-purple-100">${solution.rewardsUsed} commandes séparées</b> à la suite sur la borne (1 offre Kingdom max par ticket).
+                ? `<div class="mb-3 p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-500/40 text-xs text-purple-900 dark:text-purple-200 font-medium text-left">
+                     ⚠️ <b class="text-purple-950 dark:text-purple-100">${solution.rewardsUsed} récompenses Kingdom utilisées</b> : fais <b class="text-purple-950 dark:text-purple-100">${solution.rewardsUsed} commandes séparées</b> à la suite sur la borne (1 offre Kingdom max par ticket).
                    </div>`
                 : '';
 
             const rankStyles = {
                 1: {
-                    border: 'border-t-orange-500 border-x-neutral-800 border-b-neutral-800 ring-2 ring-orange-500/40 shadow-[0_0_35px_-5px_rgba(249,115,22,0.25)]',
-                    badgeBg: 'bg-orange-500 text-neutral-950',
+                    border: 'border-orange-500 dark:border-t-orange-500 dark:border-x-neutral-800 dark:border-b-neutral-800 ring-2 ring-orange-400/50 dark:ring-orange-500/40 shadow-2xl dark:shadow-[0_0_35px_-5px_rgba(249,115,22,0.25)]',
+                    badgeBg: 'bg-orange-600 dark:bg-orange-500 text-white dark:text-neutral-950',
                     badgeLabel: '🏆 #1 MEILLEUR PRIX',
-                    priceColor: 'text-orange-400 text-4xl'
+                    priceColor: 'text-orange-600 dark:text-orange-400 text-4xl'
                 },
                 2: {
-                    border: 'border-t-neutral-400 border-x-neutral-800 border-b-neutral-800 shadow-xl',
-                    badgeBg: 'bg-neutral-800 text-neutral-200 border border-neutral-700',
+                    border: 'border-stone-400 dark:border-t-neutral-400 dark:border-x-neutral-800 dark:border-b-neutral-800 shadow-md dark:shadow-xl',
+                    badgeBg: 'bg-stone-200 dark:bg-neutral-800 text-stone-700 dark:text-neutral-200 border border-transparent dark:border-neutral-700',
                     badgeLabel: '🥈 2ÈME MEILLEUR PRIX',
-                    priceColor: 'text-neutral-100 text-3xl'
+                    priceColor: 'text-stone-800 dark:text-neutral-100 text-3xl'
                 },
                 3: {
-                    border: 'border-t-amber-700 border-x-neutral-800 border-b-neutral-800 shadow-xl',
-                    badgeBg: 'bg-amber-950/60 text-amber-300 border border-amber-700/50',
+                    border: 'border-amber-700 dark:border-t-amber-700 dark:border-x-neutral-800 dark:border-b-neutral-800 shadow-md dark:shadow-xl',
+                    badgeBg: 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-transparent dark:border-amber-700/50',
                     badgeLabel: '🥉 3ÈME MEILLEUR PRIX',
-                    priceColor: 'text-neutral-100 text-3xl'
+                    priceColor: 'text-stone-800 dark:text-neutral-100 text-3xl'
                 }
             }[rank];
 
             const kdAlonesHtml = kdAlones.length > 0 ? `
-                <div class="bg-amber-950/25 rounded-xl p-3.5 border border-amber-500/40 text-left mb-3">
-                    <div class="text-xs font-extrabold uppercase tracking-wide text-amber-400 mb-1.5">
+                <div class="bg-amber-50/70 dark:bg-amber-950/25 rounded-xl p-3.5 border border-amber-300 dark:border-amber-500/40 text-left mb-3">
+                    <div class="text-xs font-extrabold uppercase tracking-wide text-amber-800 dark:text-amber-400 mb-1.5">
                         👑 Produit${kdAlones.length > 1 ? 's' : ''} offert${kdAlones.length > 1 ? 's' : ''} avec tes Couronnes
                     </div>
                     <ul class="text-sm space-y-2">
                         ${kdAlones.map(ka => `
-                            <li class="flex justify-between items-start gap-2 border-b last:border-b-0 border-amber-500/20 pb-1.5 last:pb-0">
+                            <li class="flex justify-between items-start gap-2 border-b last:border-b-0 border-amber-200/70 dark:border-amber-500/20 pb-1.5 last:pb-0">
                                 <div>
-                                    <div class="font-bold text-neutral-100">✓ ${escapeHtml(ka.product.name)}</div>
-                                    <div class="text-xs text-amber-200/80">📍 Onglet Kingdom → <b class="text-amber-300">« ${escapeHtml(ka.offerTitle)} »</b> (−${ka.crownsCost} 👑)</div>
+                                    <div class="font-bold text-stone-900 dark:text-neutral-100">✓ ${escapeHtml(ka.product.name)}</div>
+                                    <div class="text-xs text-amber-900 dark:text-amber-200/80">📍 Onglet Kingdom → <b class="text-amber-950 dark:text-amber-300">« ${escapeHtml(ka.offerTitle)} »</b> (−${ka.crownsCost} 👑)</div>
                                 </div>
-                                <span class="font-extrabold text-emerald-400 text-xs whitespace-nowrap">OFFERT (0,00 €)</span>
+                                <span class="font-extrabold text-emerald-700 dark:text-emerald-400 text-xs whitespace-nowrap">OFFERT (0,00 €)</span>
                             </li>
                         `).join('')}
                     </ul>
@@ -1891,24 +1966,24 @@
             const menusHtml = menus.map((mAct, idx) => renderMenuBlock(mAct, idx + 1, false)).join('');
 
             const alonesHtml = aloneList.length > 0 ? `
-                <div class="bg-neutral-950/70 rounded-xl p-3.5 border border-neutral-800 text-left">
-                    <div class="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-1.5">
+                <div class="bg-stone-50 dark:bg-neutral-950/70 rounded-xl p-3.5 border border-stone-200 dark:border-neutral-800 text-left">
+                    <div class="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-neutral-400 mb-1.5">
                         ➕ À ajouter à l'unité sur la borne
                     </div>
                     <ul class="text-sm space-y-1.5">
                         ${aloneList.map(item => {
                             const path = (item.product.paths && item.product.paths[0]) ? item.product.paths[0] : item.product.category;
                             const anyNote = item.anySizeNotes.size > 0
-                                ? `<div class="text-xs text-orange-400 font-medium">📏 Format le moins cher à l'unité</div>`
+                                ? `<div class="text-xs text-orange-700 dark:text-orange-400 font-medium">📏 Format le moins cher à l'unité</div>`
                                 : '';
                             return `
-                                <li class="flex justify-between items-start gap-2 border-b last:border-b-0 border-neutral-800 pb-1.5 last:pb-0">
+                                <li class="flex justify-between items-start gap-2 border-b last:border-b-0 border-stone-200/70 dark:border-neutral-800 pb-1.5 last:pb-0">
                                     <div>
-                                        <span class="font-semibold text-neutral-100">${item.qty}× ${escapeHtml(item.product.name)}</span>
-                                        <div class="text-xs text-neutral-400">📍 ${escapeHtml(path)}</div>
+                                        <span class="font-semibold text-stone-800 dark:text-neutral-100">${item.qty}× ${escapeHtml(item.product.name)}</span>
+                                        <div class="text-xs text-stone-500 dark:text-neutral-400">📍 ${escapeHtml(path)}</div>
                                         ${anyNote}
                                     </div>
-                                    <span class="font-bold text-neutral-200 whitespace-nowrap">${formatEuros(item.product._aloneCents * item.qty)}</span>
+                                    <span class="font-bold text-stone-700 dark:text-neutral-200 whitespace-nowrap">${formatEuros(item.product._aloneCents * item.qty)}</span>
                                 </li>
                             `;
                         }).join('')}
@@ -1917,19 +1992,19 @@
             ` : '';
 
             return `
-                <div class="bg-neutral-900 rounded-2xl p-5 border border-t-8 ${rankStyles.border} flex flex-col justify-between ${orderClasses}">
+                <div class="bg-white dark:bg-neutral-900 rounded-2xl p-5 border-t-8 dark:border dark:border-t-8 ${rankStyles.border} flex flex-col justify-between ${orderClasses}">
                     <div>
                         <div class="text-center mb-4">
                             <span class="inline-block text-xs font-extrabold px-3 py-1 rounded-full tracking-wider ${rankStyles.badgeBg}">
                                 ${rankStyles.badgeLabel}
                             </span>
-                            <h3 class="font-extrabold text-lg text-neutral-100 mt-3">${escapeHtml(title)}</h3>
+                            <h3 class="font-extrabold text-lg text-stone-800 dark:text-neutral-100 mt-3">${escapeHtml(title)}</h3>
                             <p class="${rankStyles.priceColor} font-black mt-1">${formatEuros(solution.costCents)}</p>
                             ${diffBadge}
                             ${crownsBadge}
                         </div>
-                        <div class="border-t border-neutral-800 pt-3">
-                            <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">
+                        <div class="border-t border-stone-200 dark:border-neutral-800 pt-3">
+                            <p class="text-xs font-bold text-stone-400 dark:text-neutral-500 uppercase tracking-wider mb-2">
                                 Marche à suivre sur la borne :
                             </p>
                             ${multiTicketWarning}
@@ -1944,6 +2019,7 @@
         }
 
         async function initApp() {
+            updateThemeSwitchUI();
             document.getElementById('input-crowns').value = userCrowns;
             updateCrownsUI();
             await Promise.all([
