@@ -188,55 +188,46 @@
             </div>
 
             <!-- 4 Catégories de produits -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
-                    <div>
-                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍔 Burgers, Wraps & Box</label>
-                        <select id="select-main" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
-                            <option value="">-- Choisir un plat --</option>
-                        </select>
-                    </div>
-                    <button id="btn-add-main" disabled onclick="addFromSelect('select-main')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
-                        + Ajouter au panier
-                    </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800">
+                    <label for="select-main" class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍔 Burgers, Wraps & Box</label>
+                    <select id="select-main" disabled onchange="updateAddAllButton()" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        <option value="">-- Choisir un plat --</option>
+                    </select>
                 </div>
 
-                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
-                    <div>
-                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍟 Frites, Nuggets & Snacks</label>
-                        <select id="select-side" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
-                            <option value="">-- Choisir un snack / side --</option>
-                        </select>
-                    </div>
-                    <button id="btn-add-side" disabled onclick="addFromSelect('select-side')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
-                        + Ajouter au panier
-                    </button>
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800">
+                    <label for="select-side" class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍟 Frites, Nuggets & Snacks</label>
+                    <select id="select-side" disabled onchange="updateAddAllButton()" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        <option value="">-- Choisir un snack / side --</option>
+                    </select>
                 </div>
 
-                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
-                    <div>
-                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🥤 Boissons & Cafés</label>
-                        <select id="select-drink" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
-                            <option value="">-- Choisir une boisson --</option>
-                        </select>
-                    </div>
-                    <button id="btn-add-drink" disabled onclick="addFromSelect('select-drink')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
-                        + Ajouter au panier
-                    </button>
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800">
+                    <label for="select-drink" class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🥤 Boissons & Cafés</label>
+                    <select id="select-drink" disabled onchange="updateAddAllButton()" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        <option value="">-- Choisir une boisson --</option>
+                    </select>
                 </div>
 
-                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
-                    <div>
-                        <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍦 Glaces, Desserts & Sauces</label>
-                        <select id="select-sweet" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
-                            <option value="">-- Choisir dessert / sauce --</option>
-                        </select>
-                    </div>
-                    <button id="btn-add-sweet" disabled onclick="addFromSelect('select-sweet')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
-                        + Ajouter au panier
-                    </button>
+                <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800">
+                    <label for="select-sweet" class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍦 Glaces, Desserts & Sauces</label>
+                    <select id="select-sweet" disabled onchange="updateAddAllButton()" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        <option value="">-- Choisir dessert / sauce --</option>
+                    </select>
                 </div>
             </div>
+
+            <!-- Bouton unique d'ajout au panier -->
+            <button
+                type="button"
+                id="btn-add-all"
+                disabled
+                onclick="addAllSelected()"
+                class="w-full mb-6 bg-orange-100 dark:bg-orange-500/20 disabled:opacity-40 disabled:cursor-not-allowed border border-orange-200 dark:border-orange-500/40 text-orange-800 dark:text-orange-200 py-2.5 rounded-xl text-sm font-bold hover:bg-orange-200 dark:hover:bg-orange-500/30 transition"
+            >
+                + Ajouter la sélection au panier
+            </button>
 
             <!-- Options d'optimisation (grille 2x2) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-stone-50 dark:bg-neutral-950/60 border border-stone-200 dark:border-neutral-800 rounded-xl p-3.5 mb-6 text-xs sm:text-sm text-stone-700 dark:text-neutral-300">
@@ -296,6 +287,7 @@
         const STORAGE_STORE_KEY = 'bk_optimizer_selected_store';
         const STORAGE_CROWNS_KEY = 'bk_optimizer_crowns';
         const STORAGE_THEME_KEY = 'bk_optimizer_theme';
+        const SELECT_IDS = ['select-main', 'select-side', 'select-drink', 'select-sweet'];
 
         // =========================================================
         // SWITCH MODE SOMBRE / MODE LUMIÈRE
@@ -474,7 +466,7 @@
         }
 
         function setCatalogControlsEnabled(enabled) {
-            const ids = ['quick-search', 'select-main', 'select-side', 'select-drink', 'select-sweet', 'btn-add-main', 'btn-add-side', 'btn-add-drink', 'btn-add-sweet', 'btn-calculate'];
+            const ids = ['quick-search', ...SELECT_IDS, 'btn-calculate'];
             for (const id of ids) {
                 const el = document.getElementById(id);
                 if (el) el.disabled = !enabled;
@@ -484,6 +476,21 @@
                 quickSearch.placeholder = enabled
                     ? '🔍 Rechercher un produit (Frites, Coca, Whopper...)'
                     : '🔍 Choisis d\'abord un restaurant...';
+            }
+            updateAddAllButton();
+        }
+
+        function updateAddAllButton() {
+            const btn = document.getElementById('btn-add-all');
+            if (!btn) return;
+            const count = SELECT_IDS.filter(id => Boolean(document.getElementById(id)?.value)).length;
+            btn.disabled = !catalog || count === 0;
+            if (count === 0) {
+                btn.textContent = '+ Ajouter la sélection au panier';
+            } else if (count === 1) {
+                btn.textContent = '+ Ajouter 1 article au panier';
+            } else {
+                btn.textContent = `+ Ajouter les ${count} articles au panier`;
             }
         }
 
@@ -1086,6 +1093,7 @@
             populateSelectWithGroups('select-side', buckets.side, 'side');
             populateSelectWithGroups('select-drink', buckets.drink, 'drink');
             populateSelectWithGroups('select-sweet', buckets.sweet, 'sweet');
+            updateAddAllButton();
         }
 
         function handleQuickSearch() {
@@ -1162,26 +1170,47 @@
             if (sBox && !sBox.contains(e.target) && e.target !== sInput && e.target !== geoBtn) sBox.classList.add('hidden');
         });
 
-        function addFromSelect(selectId) {
-            const select = document.getElementById(selectId);
-            if (!select.value) return;
-            addCartToken(select.value);
-            select.value = '';
-        }
-
-        function addCartToken(token) {
+        function pushTokenToCart(token) {
             const existing = cart.find(c => c.key === token);
             if (existing) {
                 existing.qty += 1;
-            } else if (token.startsWith('FAM:')) {
-                const familyKey = token.slice(4);
-                if (!multiSizeFamilies[familyKey]) return;
-                cart.push({ key: token, isFamily: true, familyKey, qty: 1 });
-            } else if (token.startsWith('PROD:')) {
-                const id = token.slice(5);
-                if (!productsById[id]) return;
-                cart.push({ key: token, isFamily: false, id, qty: 1 });
+                return true;
             }
+            if (token.startsWith('FAM:')) {
+                const familyKey = token.slice(4);
+                if (!multiSizeFamilies[familyKey]) return false;
+                cart.push({ key: token, isFamily: true, familyKey, qty: 1 });
+                return true;
+            }
+            if (token.startsWith('PROD:')) {
+                const id = token.slice(5);
+                if (!productsById[id]) return false;
+                cart.push({ key: token, isFamily: false, id, qty: 1 });
+                return true;
+            }
+            return false;
+        }
+
+        function addAllSelected() {
+            let addedAny = false;
+            for (const selectId of SELECT_IDS) {
+                const select = document.getElementById(selectId);
+                if (select && select.value) {
+                    if (pushTokenToCart(select.value)) {
+                        addedAny = true;
+                    }
+                    select.value = '';
+                }
+            }
+            updateAddAllButton();
+            if (addedAny) {
+                updateCartDisplay();
+                recalculateIfVisible();
+            }
+        }
+
+        function addCartToken(token) {
+            if (!pushTokenToCart(token)) return;
             updateCartDisplay();
             recalculateIfVisible();
         }
@@ -2081,6 +2110,7 @@
             updateCrownsUI();
             updateStoreHeaderUI();
             updateCatalogStatusText();
+            updateAddAllButton();
 
             const tasks = [
                 loadRestaurantsList(),
