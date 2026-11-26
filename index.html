@@ -91,7 +91,7 @@
                     <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl shrink-0">
                         📍
                     </div>
-                    <div class="min-w-0">
+                    <div class="min-w-0 flex-1">
                         <div class="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-neutral-500">Restaurant sélectionné</div>
                         <div class="font-extrabold text-stone-900 dark:text-neutral-100 text-base truncate" id="current-store-name">
                             Aucun restaurant sélectionné
@@ -99,6 +99,8 @@
                         <div class="text-xs text-stone-500 dark:text-neutral-400 truncate" id="current-store-address">
                             Choisis ton Burger King ci-dessous pour charger les tarifs
                         </div>
+                        <!-- Badges Statut d'ouverture en direct -->
+                        <div class="flex flex-wrap gap-1.5 mt-2" id="current-store-hours"></div>
                     </div>
                 </div>
 
@@ -274,7 +276,6 @@
 
         <!-- Section 2 : Résultats Podium Top 3 -->
         <div id="results-container" class="hidden">
-            <div id="retail-banner" style="display: none" class="hidden bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 rounded-xl p-4 mb-6 text-center shadow-sm dark:shadow-md"></div>
             <h2 class="text-2xl font-extrabold mb-6 text-center text-stone-800 dark:text-neutral-100">
                 🏆 Top 3 des combinaisons exactes à commander sur la borne
             </h2>
@@ -288,6 +289,7 @@
         const STORAGE_CROWNS_KEY = 'bk_optimizer_crowns';
         const STORAGE_THEME_KEY = 'bk_optimizer_theme';
         const SELECT_IDS = ['select-main', 'select-side', 'select-drink', 'select-sweet'];
+        const DAY_NAMES = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
         // =========================================================
         // SWITCH MODE SOMBRE / MODE LUMIÈRE
@@ -463,6 +465,104 @@
             const a = Math.sin(dLat / 2) ** 2 +
                       Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
             return 2 * R * Math.asin(Math.sqrt(a));
+        }
+
+        // =========================================================
+        // STATUT D'OUVERTURE EN DIRECT (SALLE + DRIVE)
+        // =========================================================
+        function parseTimeToMinutes(hhmm) {
+            if (!hhmm || typeof hhmm !== 'string') return null;
+            const parts = hhmm.split(':');
+            if (parts.length < 2) return null;
+            const h = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            if (Number.isNaN(h) || Number.isNaN(m)) return null;
+            return h * 60 + m;
+        }
+
+        function formatHourFr(hhmm) {
+            if (!hhmm) return '';
+            const [h, m] = hhmm.split(':');
+            return `${h}h${m}`;
+        }
+
+        function evaluateScheduleStatus(scheduleObj, nowDate = new Date()) {
+            if (!scheduleObj || typeof scheduleObj !== 'object') return null;
+
+            const todayIdx = nowDate.getDay();
+            const yesterdayIdx = (todayIdx + 6) % 7;
+            const todayKey = DAY_NAMES[todayIdx];
+            const yesterdayKey = DAY_NAMES[yesterdayIdx];
+            const nowMins = nowDate.getHours() * 60 + nowDate.getMinutes();
+
+            const is24h = (d) => d && (d.always === true || (d.o === '00:01' && d.c === '00:00') || (d.o === '00:00' && d.c === '23:59'));
+            const isClosedPlaceholder = (d) => !d || !d.o || !d.c || (d.o === '00:00' && d.c === '00:01');
+
+            // 1. Vérifier si le créneau d'hier déborde après minuit (ex: 11:00 -> 02:00)
+            const yDay = scheduleObj[yesterdayKey];
+            if (yDay && !isClosedPlaceholder(yDay) && !is24h(yDay)) {
+                const yOpen = parseTimeToMinutes(yDay.o);
+                const yClose = parseTimeToMinutes(yDay.c);
+                if (yOpen !== null && yClose !== null && yClose <= yOpen && yClose > 0 && nowMins < yClose) {
+                    const remaining = yClose - nowMins;
+                    return {
+                        state: remaining <= 30 ? 'closing' : 'open',
+                        label: remaining <= 30 ? `Ferme à ${formatHourFr(yDay.c)}` : `Ouvert jusqu'à ${formatHourFr(yDay.c)}`
+                    };
+                }
+            }
+
+            // 2. Vérifier le créneau d'aujourd'hui
+            const tDay = scheduleObj[todayKey];
+            if (is24h(tDay)) {
+                return { state: 'open', label: 'Ouvert 24h/24' };
+            }
+
+            if (!isClosedPlaceholder(tDay)) {
+                const tOpen = parseTimeToMinutes(tDay.o);
+                const tClose = parseTimeToMinutes(tDay.c);
+                if (tOpen !== null && tClose !== null) {
+                    const effectiveClose = tClose <= tOpen ? tClose + 1440 : tClose;
+                    if (nowMins >= tOpen && nowMins < effectiveClose) {
+                        const remaining = effectiveClose - nowMins;
+                        return {
+                            state: remaining <= 30 ? 'closing' : 'open',
+                            label: remaining <= 30 ? `Ferme à ${formatHourFr(tDay.c)}` : `Ouvert jusqu'à ${formatHourFr(tDay.c)}`
+                        };
+                    }
+                    if (nowMins < tOpen) {
+                        return { state: 'closed', label: `Fermé · Ouvre à ${formatHourFr(tDay.o)}` };
+                    }
+                }
+            }
+
+            // 3. Fermé pour aujourd'hui -> afficher l'ouverture de demain si dispo
+            const tomorrowKey = DAY_NAMES[(todayIdx + 1) % 7];
+            const tomDay = scheduleObj[tomorrowKey];
+            if (tomDay && !isClosedPlaceholder(tomDay) && !is24h(tomDay)) {
+                return { state: 'closed', label: `Fermé · Ouvre demain à ${formatHourFr(tomDay.o)}` };
+            }
+            return { state: 'closed', label: 'Fermé actuellement' };
+        }
+
+        function renderOpeningBadge(status, prefix = '') {
+            if (!status) return '';
+            const styleMap = {
+                open: {
+                    cls: 'bg-emerald-100 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300',
+                    dot: '🟢'
+                },
+                closing: {
+                    cls: 'bg-amber-100 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300',
+                    dot: '🟠'
+                },
+                closed: {
+                    cls: 'bg-rose-100 dark:bg-rose-500/15 border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300',
+                    dot: '🔴'
+                }
+            }[status.state];
+
+            return `<span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full border ${styleMap.cls}">${styleMap.dot} ${prefix}${escapeHtml(status.label)}</span>`;
         }
 
         function setCatalogControlsEnabled(enabled) {
@@ -735,10 +835,12 @@
         function updateStoreHeaderUI() {
             const nameEl = document.getElementById('current-store-name');
             const addrEl = document.getElementById('current-store-address');
+            const hoursEl = document.getElementById('current-store-hours');
 
             if (!currentStoreId) {
                 nameEl.textContent = 'Aucun restaurant sélectionné';
                 addrEl.textContent = 'Recherche ta ville ou utilise la géolocalisation ci-dessous';
+                hoursEl.innerHTML = '';
                 return;
             }
 
@@ -746,9 +848,23 @@
             if (found) {
                 nameEl.textContent = `Burger King ${found.name}`;
                 addrEl.textContent = found.address || '';
+
+                const now = new Date();
+                const roomStatus = evaluateScheduleStatus(found.openings?.room, now);
+                const driveStatus = found.hasDrive ? evaluateScheduleStatus(found.openings?.drive, now) : null;
+
+                let badges = '';
+                if (roomStatus) {
+                    badges += renderOpeningBadge(roomStatus, driveStatus ? 'Salle : ' : '');
+                }
+                if (driveStatus) {
+                    badges += renderOpeningBadge(driveStatus, '🚗 Drive : ');
+                }
+                hoursEl.innerHTML = badges;
             } else {
                 nameEl.textContent = 'Restaurant sélectionné';
                 addrEl.textContent = allRestaurants.length > 0 ? '' : 'Chargement des informations...';
+                hoursEl.innerHTML = '';
             }
         }
 
@@ -760,8 +876,14 @@
                 return;
             }
 
+            const now = new Date();
             box.innerHTML = stores.map(r => {
                 const isSelected = r.id === currentStoreId;
+                const roomStatus = evaluateScheduleStatus(r.openings?.room, now);
+                const statusDot = roomStatus
+                    ? (roomStatus.state === 'open' ? '🟢' : (roomStatus.state === 'closing' ? '🟠' : '🔴'))
+                    : '';
+
                 let rightBadge = '';
                 if (typeof r._distanceKm === 'number') {
                     rightBadge = `<span class="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/15 border border-transparent dark:border-emerald-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">${r._distanceKm.toFixed(1).replace('.', ',')} km</span>`;
@@ -775,9 +897,9 @@
                         onclick="selectStore('${escapeAttr(r.id)}')"
                         class="w-full text-left px-3.5 py-2.5 hover:bg-orange-50 dark:hover:bg-neutral-800 flex justify-between items-start gap-2 border-b last:border-b-0 border-stone-100 dark:border-neutral-800 ${isSelected ? 'bg-orange-50/80 dark:bg-orange-500/10' : ''}"
                     >
-                        <div>
-                            <div class="font-bold text-sm text-stone-800 dark:text-neutral-100">
-                                ${isSelected ? '✓ ' : ''}${escapeHtml(r.name)}
+                        <div class="min-w-0">
+                            <div class="font-bold text-sm text-stone-800 dark:text-neutral-100 truncate">
+                                ${isSelected ? '✓ ' : ''}${escapeHtml(r.name)} ${statusDot}
                             </div>
                             <div class="text-xs text-stone-500 dark:text-neutral-400 line-clamp-1">${escapeHtml(r.address)}</div>
                         </div>
@@ -1347,7 +1469,7 @@
         }
 
         // =========================================================
-        // MOTEUR COMBINATOIRE EXACT (MENUS + UNITÉ + COURONNES)
+        // MOTEUR COMBINATOIRE EXACT (MENUS + UNITÉ + COURONNES + SAUCES GRATUITES)
         // =========================================================
         function getSupplementCents(prod, sizeCode) {
             if (!prod || !prod.prices) return 0;
@@ -1670,7 +1792,7 @@
             }
         }
 
-        function findTop3Combinations(cartGroups, actions, availableCrowns, maxKingdomRewards) {
+        function findTopCombinations(cartGroups, actions, availableCrowns, maxKingdomRewards, limit = 10) {
             const T = cartGroups.length;
             const initialRem = cartGroups.map(cg => cg.qty);
 
@@ -1696,7 +1818,7 @@
             let expansions = 0;
             const MAX_EXPANSIONS = 35000;
 
-            while (heap.size() > 0 && solutions.length < 3 && expansions < MAX_EXPANSIONS) {
+            while (heap.size() > 0 && solutions.length < limit && expansions < MAX_EXPANSIONS) {
                 const state = heap.pop();
                 expansions++;
 
@@ -1772,6 +1894,87 @@
             return solutions;
         }
 
+        // Détecte automatiquement les sauces du panier qui sont en réalité offertes en option sur un produit de la commande
+        function applyFreeSaucesToSolution(solution) {
+            const slots = [];
+
+            const addProviderSlots = (prod) => {
+                if (!prod || !Array.isArray(prod.freeOptions)) return;
+                for (const opt of prod.freeOptions) {
+                    if (opt.maxQty > 0 && Array.isArray(opt.productIds) && opt.productIds.length > 0) {
+                        slots.push({
+                            providerName: prod.name,
+                            remaining: opt.maxQty,
+                            allowedIds: new Set(opt.productIds),
+                            specificity: opt.productIds.length
+                        });
+                    }
+                }
+            };
+
+            for (const act of solution.chosenActions) {
+                if (act.kind === 'MENU' || act.kind === 'KINGDOM_MENU') {
+                    for (const st of act.stepsDetail) {
+                        addProviderSlots(st.prod);
+                    }
+                } else if (act.kind === 'ALONE' || act.kind === 'KINGDOM_ALONE') {
+                    addProviderSlots(act.product);
+                }
+            }
+
+            if (slots.length === 0) {
+                return { ...solution, freeSauces: [] };
+            }
+
+            // Utiliser d'abord les créneaux les plus restrictifs (ex: frites = 2 sauces) avant les plus larges (ex: nuggets = 9 sauces)
+            slots.sort((a, b) => a.specificity - b.specificity);
+
+            // Repérer les articles ALONE éligibles à un créneau gratuit, triés du plus cher au moins cher
+            const candidateIndices = [];
+            solution.chosenActions.forEach((act, idx) => {
+                if (act.kind === 'ALONE' && act.costCents > 0) {
+                    const eligible = slots.some(s => s.allowedIds.has(act.product.id));
+                    if (eligible) candidateIndices.push(idx);
+                }
+            });
+
+            if (candidateIndices.length === 0) {
+                return { ...solution, freeSauces: [] };
+            }
+
+            candidateIndices.sort((a, b) => solution.chosenActions[b].costCents - solution.chosenActions[a].costCents);
+
+            const convertedIndices = new Set();
+            const freeSauces = [];
+            let savedCentsTotal = 0;
+
+            for (const idx of candidateIndices) {
+                const act = solution.chosenActions[idx];
+                const matchingSlot = slots.find(s => s.remaining > 0 && s.allowedIds.has(act.product.id));
+                if (matchingSlot) {
+                    matchingSlot.remaining -= 1;
+                    convertedIndices.add(idx);
+                    savedCentsTotal += act.costCents;
+                    freeSauces.push({
+                        sauce: act.product,
+                        savedCents: act.costCents,
+                        providerName: matchingSlot.providerName
+                    });
+                }
+            }
+
+            if (convertedIndices.size === 0) {
+                return { ...solution, freeSauces: [] };
+            }
+
+            return {
+                ...solution,
+                costCents: Math.max(0, solution.costCents - savedCentsTotal),
+                chosenActions: solution.chosenActions.filter((_, idx) => !convertedIndices.has(idx)),
+                freeSauces
+            };
+        }
+
         function escapeHtml(str) {
             return String(str || '')
                 .replace(/&/g, '&amp;')
@@ -1810,50 +2013,47 @@
 
             const retailCents = cartGroups.reduce((sum, cg) => sum + cg.unitAloneCents * cg.qty, 0);
             const actions = buildCandidateActions(cartGroups, allowUpgrades, allowKids, userCrowns, noBonusItems);
-            const topSolutions = findTop3Combinations(cartGroups, actions, userCrowns, maxKingdomRewards);
+
+            // Récupérer les 10 meilleures solutions, appliquer les sauces gratuites incluses, puis trier pour le vrai Top 3
+            const rawTop = findTopCombinations(cartGroups, actions, userCrowns, maxKingdomRewards, 10);
+            const topSolutions = rawTop
+                .map(applyFreeSaucesToSolution)
+                .sort((a, b) => (a.costCents - b.costCents) || (a.crownsUsed - b.crownsUsed))
+                .slice(0, 3);
+
+            // Calculer le meilleur prix SANS couronnes pour évaluer la vraie rentabilité (€ / couronne)
+            let bestNoCrownsCents = null;
+            if (userCrowns >= 40 && topSolutions.some(s => s.crownsUsed > 0)) {
+                const rawNoCrowns = findTopCombinations(cartGroups, actions, 0, 0, 5).map(applyFreeSaucesToSolution);
+                if (rawNoCrowns.length > 0) {
+                    rawNoCrowns.sort((a, b) => a.costCents - b.costCents);
+                    bestNoCrownsCents = rawNoCrowns[0].costCents;
+                }
+            }
 
             const resultsContainer = document.getElementById('results-container');
-            const retailBanner = document.getElementById('retail-banner');
             const podiumGrid = document.getElementById('podium-grid');
 
             resultsContainer.classList.remove('hidden');
 
             if (topSolutions.length === 0) {
-                retailBanner.classList.add('hidden');
                 podiumGrid.innerHTML = `<div class="col-span-3 text-center text-red-600 dark:text-red-400 font-bold">Aucune combinaison trouvée.</div>`;
                 return;
             }
 
             const best = topSolutions[0];
-            const bestSavings = retailCents - best.costCents;
-            const crownsNote = best.crownsUsed > 0
-                ? ` + <span class="inline-block bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-300 font-extrabold px-2.5 py-0.5 rounded-full">👑 ${best.crownsUsed} couronnes utilisées</span>`
-                : '';
-
-            if (bestSavings > 0) {
-                retailBanner.innerHTML = `<p class="text-sm md:text-base text-stone-700 dark:text-neutral-300">
-                     Prix hors menu & sans couronnes : <b class="line-through text-stone-500">${formatEuros(retailCents)}</b>
-                     — Avec la combinaison #1, tu paies <b class="text-emerald-700 dark:text-emerald-400">${formatEuros(best.costCents)}</b>
-                     soit <span class="inline-block bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-extrabold px-2.5 py-0.5 rounded-full ml-1">−${formatEuros(bestSavings)} d'économie réelle</span>${crownsNote} !
-                   </p>`;
-                retailBanner.classList.remove('hidden');
-            } else {
-                retailBanner.innerHTML = '';
-                retailBanner.classList.add('hidden');
-            }
-
             const cardsHtml = [];
 
             if (topSolutions[1]) {
-                cardsHtml.push(renderSolutionCard(topSolutions[1], 2, retailCents, 'order-2 lg:order-1', best.costCents));
+                cardsHtml.push(renderSolutionCard(topSolutions[1], 2, retailCents, 'order-2 lg:order-1', best.costCents, bestNoCrownsCents));
             } else {
                 cardsHtml.push(`<div class="hidden lg:block lg:order-1"></div>`);
             }
 
-            cardsHtml.push(renderSolutionCard(topSolutions[0], 1, retailCents, 'order-1 lg:order-2 lg:-translate-y-3', best.costCents));
+            cardsHtml.push(renderSolutionCard(topSolutions[0], 1, retailCents, 'order-1 lg:order-2 lg:-translate-y-3', best.costCents, bestNoCrownsCents));
 
             if (topSolutions[2]) {
-                cardsHtml.push(renderSolutionCard(topSolutions[2], 3, retailCents, 'order-3 lg:order-3', best.costCents));
+                cardsHtml.push(renderSolutionCard(topSolutions[2], 3, retailCents, 'order-3 lg:order-3', best.costCents, bestNoCrownsCents));
             } else {
                 cardsHtml.push(`<div class="hidden lg:block lg:order-3"></div>`);
             }
@@ -1950,11 +2150,12 @@
             `;
         }
 
-        function renderSolutionCard(solution, rank, retailCents, orderClasses, bestCostCents) {
+        function renderSolutionCard(solution, rank, retailCents, orderClasses, bestCostCents, bestNoCrownsCents) {
             const kdMenus = solution.chosenActions.filter(a => a.kind === 'KINGDOM_MENU');
             const kdAlones = solution.chosenActions.filter(a => a.kind === 'KINGDOM_ALONE');
             const menus = solution.chosenActions.filter(a => a.kind === 'MENU');
             const alones = solution.chosenActions.filter(a => a.kind === 'ALONE');
+            const freeSauces = solution.freeSauces || [];
 
             const aloneGrouped = {};
             for (const a of alones) {
@@ -2004,13 +2205,40 @@
                 diffBadge = `<div class="mt-2"><span class="inline-block bg-amber-100 dark:bg-amber-500/15 border border-transparent dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full">+${formatEuros(-diffCents)} vs taille mini seule</span></div>`;
             }
 
-            const crownsBadge = solution.crownsUsed > 0
-                ? `<div class="mt-2">
-                     <span class="inline-block bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-950 dark:text-amber-300 text-xs font-extrabold px-2.5 py-0.5 rounded-full">
-                       👑 ${solution.crownsUsed} couronnes utilisées (reste ${userCrowns - solution.crownsUsed} 👑)
-                     </span>
-                   </div>`
-                : (userCrowns >= 40 ? `<div class="mt-2"><span class="text-xs text-stone-400 dark:text-neutral-500 font-semibold">👑 0 couronne utilisée (garde tes ${userCrowns} 👑)</span></div>` : '');
+            // Badge Couronnes + Rentabilité réelle (€ gagnés par couronne vs meilleur prix sans couronnes)
+            let crownsBadge = '';
+            if (solution.crownsUsed > 0) {
+                let roiHtml = '';
+                if (typeof bestNoCrownsCents === 'number') {
+                    const netCrownSavingsCents = bestNoCrownsCents - solution.costCents;
+                    const centsPerCrown = netCrownSavingsCents / solution.crownsUsed;
+                    if (netCrownSavingsCents > 0) {
+                        const ctsLabel = centsPerCrown.toFixed(1).replace('.', ',');
+                        let ratingText = '✅ Rentable';
+                        let ratingCls = 'text-emerald-700 dark:text-emerald-400';
+                        if (centsPerCrown >= 6.0) {
+                            ratingText = '🔥 Très rentable';
+                            ratingCls = 'text-emerald-700 dark:text-emerald-300';
+                        } else if (centsPerCrown < 4.5) {
+                            ratingText = '⚠️ Peu rentable (garde tes 👑)';
+                            ratingCls = 'text-amber-700 dark:text-amber-400';
+                        }
+                        roiHtml = `<div class="text-xs font-bold mt-1 ${ratingCls}">Rentabilité : ${ctsLabel} cts / 👑 (${ratingText})</div>`;
+                    } else {
+                        roiHtml = `<div class="text-xs font-bold mt-1 text-rose-600 dark:text-rose-400">⚠️ 0 € économisé vs sans couronnes</div>`;
+                    }
+                }
+
+                crownsBadge = `
+                    <div class="mt-2">
+                        <span class="inline-block bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-950 dark:text-amber-300 text-xs font-extrabold px-2.5 py-0.5 rounded-full">
+                            👑 ${solution.crownsUsed} couronnes utilisées (reste ${userCrowns - solution.crownsUsed} 👑)
+                        </span>
+                        ${roiHtml}
+                    </div>`;
+            } else if (userCrowns >= 40) {
+                crownsBadge = `<div class="mt-2"><span class="text-xs text-stone-400 dark:text-neutral-500 font-semibold">👑 0 couronne utilisée (garde tes ${userCrowns} 👑)</span></div>`;
+            }
 
             const multiTicketWarning = solution.rewardsUsed > 1
                 ? `<div class="mb-3 p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-500/40 text-xs text-purple-900 dark:text-purple-200 font-medium text-left">
@@ -2061,6 +2289,26 @@
             const kdMenusHtml = kdMenus.map((km, idx) => renderMenuBlock(km, idx + 1, true)).join('');
             const menusHtml = menus.map((mAct, idx) => renderMenuBlock(mAct, idx + 1, false)).join('');
 
+            // Encart dédié aux sauces automatiquement passées gratuites en option
+            const freeSaucesHtml = freeSauces.length > 0 ? `
+                <div class="bg-emerald-50 dark:bg-emerald-950/30 rounded-xl p-3.5 border border-emerald-200 dark:border-emerald-500/35 text-left mb-3">
+                    <div class="text-xs font-extrabold uppercase tracking-wide text-emerald-800 dark:text-emerald-300 mb-1.5">
+                        🥫 Sauce${freeSauces.length > 1 ? 's' : ''} offerte${freeSauces.length > 1 ? 's' : ''} en option (0,00 €)
+                    </div>
+                    <ul class="text-sm space-y-1.5">
+                        ${freeSauces.map(fs => `
+                            <li class="flex justify-between items-start gap-2 border-b last:border-b-0 border-emerald-200/70 dark:border-emerald-500/20 pb-1.5 last:pb-0">
+                                <div>
+                                    <div class="font-semibold text-stone-800 dark:text-neutral-100">✓ ${escapeHtml(fs.sauce.name)}</div>
+                                    <div class="text-xs text-emerald-800 dark:text-emerald-300/90">À cocher en option gratuite avec <b>${escapeHtml(fs.providerName)}</b></div>
+                                </div>
+                                <span class="font-extrabold text-emerald-700 dark:text-emerald-400 text-xs whitespace-nowrap">−${formatEuros(fs.savedCents)}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            ` : '';
+
             const alonesHtml = aloneList.length > 0 ? `
                 <div class="bg-stone-50 dark:bg-neutral-950/70 rounded-xl p-3.5 border border-stone-200 dark:border-neutral-800 text-left">
                     <div class="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-neutral-400 mb-1.5">
@@ -2108,6 +2356,7 @@
                             ${kdMenusHtml}
                             ${kdAlonesHtml}
                             ${menusHtml}
+                            ${freeSaucesHtml}
                             ${alonesHtml}
                         </div>
                     </div>
