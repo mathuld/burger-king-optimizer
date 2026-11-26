@@ -9,26 +9,68 @@
 <body class="bg-stone-100 min-h-screen py-6 px-4 text-stone-800">
     <div class="max-w-6xl mx-auto">
         <!-- En-tête -->
-        <header class="text-center mb-8">
+        <header class="text-center mb-6">
             <h1 class="text-3xl md:text-4xl font-extrabold text-orange-600 tracking-tight">
                 🍔 Burger King Combo Optimizer
             </h1>
             <p class="text-sm text-stone-500 mt-1" id="catalog-status">
-                Connexion au catalogue Burger King via n8n...
+                Initialisation...
             </p>
         </header>
+
+        <!-- Section 0 : Choix du Restaurant -->
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-stone-200 mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <!-- Restaurant actif -->
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl shrink-0">
+                        📍
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-wider text-stone-400">Restaurant sélectionné</div>
+                        <div class="font-extrabold text-stone-900 text-base md:text-lg" id="current-store-name">
+                            Chargement du restaurant...
+                        </div>
+                        <div class="text-xs text-stone-500" id="current-store-address"></div>
+                    </div>
+                </div>
+
+                <!-- Recherche de restaurant + Géolocalisation -->
+                <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                    <div class="relative w-full sm:w-80">
+                        <input
+                            type="text"
+                            id="store-search"
+                            oninput="handleStoreSearch()"
+                            onfocus="handleStoreSearch()"
+                            placeholder="🔎 Ville, code postal, nom (ex: Valence, 69002...)"
+                            class="w-full px-3 py-2 text-sm border border-stone-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                        />
+                        <div id="store-search-results" class="hidden absolute z-30 mt-1 w-full bg-white border border-stone-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto"></div>
+                    </div>
+                    <button
+                        type="button"
+                        onclick="findNearestStores()"
+                        id="btn-geoloc"
+                        class="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-sm font-semibold transition whitespace-nowrap"
+                    >
+                        📍 Autour de moi
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Section 1 : Sélection des envies -->
         <div class="bg-white p-6 rounded-2xl shadow-md border border-stone-200 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
                 <h2 class="text-xl font-bold text-stone-800">1. Sélectionne ce que tu veux manger</h2>
-                <!-- Barre de recherche rapide -->
+                <!-- Barre de recherche rapide produits -->
                 <div class="relative w-full md:w-80">
                     <input
                         type="text"
                         id="quick-search"
                         oninput="handleQuickSearch()"
-                        placeholder="🔍 Recherche rapide (Frites, Coca, Whopper...)"
+                        placeholder="🔍 Rechercher un produit (Frites, Coca, Whopper...)"
                         class="w-full pl-3 pr-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
                     />
                     <div id="quick-search-results" class="hidden absolute z-20 mt-1 w-full bg-white border border-stone-200 rounded-lg shadow-xl max-h-72 overflow-y-auto"></div>
@@ -37,7 +79,6 @@
 
             <!-- 4 Catégories de produits -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <!-- Burgers / Wraps / Salades / Box -->
                 <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 mb-2">🍔 Burgers, Wraps & Box</label>
@@ -50,7 +91,6 @@
                     </button>
                 </div>
 
-                <!-- Frites & Snacks -->
                 <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 mb-2">🍟 Frites, Nuggets & Snacks</label>
@@ -63,7 +103,6 @@
                     </button>
                 </div>
 
-                <!-- Boissons & Cafés -->
                 <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 mb-2">🥤 Boissons & Cafés</label>
@@ -76,7 +115,6 @@
                     </button>
                 </div>
 
-                <!-- Glaces, Desserts & Sauces -->
                 <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 mb-2">🍦 Glaces, Desserts & Sauces</label>
@@ -137,16 +175,17 @@
 
     <script>
         const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
+        const STORAGE_STORE_KEY = 'bk_optimizer_selected_store';
+        const DEFAULT_STORE_ID = 'K1376';
+
+        let allRestaurants = [];
+        let currentStoreId = localStorage.getItem(STORAGE_STORE_KEY) || DEFAULT_STORE_ID;
 
         let catalog = null;
         let productsById = {};
         let buyableProducts = [];
-        let multiSizeFamilies = {}; // indexé par familyKey
+        let multiSizeFamilies = {};
         let multiSizeFamiliesList = [];
-
-        // Panier stocké sous forme :
-        // - Produit précis : { key: 'PROD:50002', isFamily: false, id: '50002', qty: 1 }
-        // - Peu importe la taille : { key: 'FAM:frites', isFamily: true, familyKey: 'frites', qty: 1 }
         let cart = [];
 
         function toCents(euros) {
@@ -172,83 +211,208 @@
             return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
         }
 
-        // Détecte la famille de taille d'un produit (Frites, Boissons cl, Snacks xN, Sundae, Fusion)
+        // Distance à vol d'oiseau en km (formule de Haversine)
+        function haversineKm(lat1, lng1, lat2, lng2) {
+            const toRad = d => (d * Math.PI) / 180;
+            const R = 6371;
+            const dLat = toRad(lat2 - lat1);
+            const dLng = toRad(lng2 - lng1);
+            const a = Math.sin(dLat / 2) ** 2 +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+            return 2 * R * Math.asin(Math.sqrt(a));
+        }
+
+        // =========================================================
+        // GESTION DES RESTAURANTS
+        // =========================================================
+        async function loadRestaurantsList() {
+            try {
+                const res = await fetch(`${WEBHOOK_URL}?mode=restaurants`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const raw = await res.json();
+                const payload = Array.isArray(raw) ? raw[0] : raw;
+
+                if (payload && Array.isArray(payload.restaurants)) {
+                    allRestaurants = payload.restaurants.map(r => ({
+                        ...r,
+                        _searchText: normalizeText(`${r.name} ${r.city} ${r.zipCode} ${r.address} ${r.id}`)
+                    }));
+                }
+                updateStoreHeaderUI();
+            } catch (err) {
+                console.warn('Impossible de charger la liste des restaurants :', err);
+                updateStoreHeaderUI();
+            }
+        }
+
+        function updateStoreHeaderUI() {
+            const nameEl = document.getElementById('current-store-name');
+            const addrEl = document.getElementById('current-store-address');
+            const found = allRestaurants.find(r => r.id === currentStoreId);
+
+            if (found) {
+                nameEl.innerHTML = `Burger King ${escapeHtml(found.name)} <span class="text-xs font-bold bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full ml-1">${escapeHtml(found.id)}</span>`;
+                addrEl.textContent = found.address || '';
+            } else {
+                nameEl.innerHTML = `Restaurant <span class="text-xs font-bold bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full ml-1">${escapeHtml(currentStoreId)}</span>`;
+                addrEl.textContent = allRestaurants.length > 0 ? 'Code restaurant personnalisé' : 'Chargement de la liste des restaurants France...';
+            }
+        }
+
+        function renderStoreResultsList(stores, emptyMsg = 'Aucun restaurant trouvé') {
+            const box = document.getElementById('store-search-results');
+            if (!stores || stores.length === 0) {
+                box.innerHTML = `<div class="p-3 text-xs text-stone-400 italic">${escapeHtml(emptyMsg)}</div>`;
+                box.classList.remove('hidden');
+                return;
+            }
+
+            box.innerHTML = stores.map(r => {
+                const isSelected = r.id === currentStoreId;
+                const distBadge = typeof r._distanceKm === 'number'
+                    ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">${r._distanceKm.toFixed(1).replace('.', ',')} km</span>`
+                    : `<span class="text-xs font-semibold text-stone-400 whitespace-nowrap">${escapeHtml(r.zipCode || r.id)}</span>`;
+
+                return `
+                    <button
+                        type="button"
+                        onclick="selectStore('${escapeAttr(r.id)}')"
+                        class="w-full text-left px-3.5 py-2.5 hover:bg-orange-50 flex justify-between items-start gap-2 border-b last:border-b-0 border-stone-100 ${isSelected ? 'bg-orange-50/80' : ''}"
+                    >
+                        <div>
+                            <div class="font-bold text-sm text-stone-800">
+                                ${isSelected ? '✓ ' : ''}${escapeHtml(r.name)}
+                            </div>
+                            <div class="text-xs text-stone-500 line-clamp-1">${escapeHtml(r.address)}</div>
+                        </div>
+                        ${distBadge}
+                    </button>
+                `;
+            }).join('');
+            box.classList.remove('hidden');
+        }
+
+        function handleStoreSearch() {
+            const input = document.getElementById('store-search');
+            const box = document.getElementById('store-search-results');
+            const q = normalizeText(input.value);
+
+            if (allRestaurants.length === 0) {
+                if (q.length >= 2) {
+                    renderStoreResultsList([], 'Liste des restaurants non chargée (vérifie la mise à jour n8n).');
+                }
+                return;
+            }
+
+            if (!q) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            const words = q.split(' ').filter(Boolean);
+            const matches = allRestaurants
+                .filter(r => words.every(w => r._searchText.includes(w)))
+                .slice(0, 15);
+
+            renderStoreResultsList(matches);
+        }
+
+        function findNearestStores() {
+            if (!navigator.geolocation) {
+                alert('La géolocalisation n\'est pas supportée par ton navigateur.');
+                return;
+            }
+            if (allRestaurants.length === 0) {
+                alert('La liste des restaurants est encore en cours de chargement.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-geoloc');
+            const origText = btn.textContent;
+            btn.textContent = '⏳ Localisation...';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    btn.textContent = origText;
+                    btn.disabled = false;
+                    const { latitude, longitude } = pos.coords;
+
+                    const nearest = allRestaurants
+                        .filter(r => typeof r.lat === 'number' && typeof r.lng === 'number')
+                        .map(r => ({
+                            ...r,
+                            _distanceKm: haversineKm(latitude, longitude, r.lat, r.lng)
+                        }))
+                        .sort((a, b) => a._distanceKm - b._distanceKm)
+                        .slice(0, 10);
+
+                    renderStoreResultsList(nearest, 'Aucun restaurant à proximité');
+                },
+                (err) => {
+                    btn.textContent = origText;
+                    btn.disabled = false;
+                    alert('Impossible de récupérer ta position GPS. Tu peux taper ta ville ou ton code postal dans la barre de recherche.');
+                },
+                { enableHighAccuracy: false, timeout: 8000 }
+            );
+        }
+
+        async function selectStore(storeId) {
+            document.getElementById('store-search').value = '';
+            document.getElementById('store-search-results').classList.add('hidden');
+
+            if (storeId === currentStoreId && catalog) return;
+
+            currentStoreId = storeId;
+            localStorage.setItem(STORAGE_STORE_KEY, currentStoreId);
+            updateStoreHeaderUI();
+            await loadCatalog(currentStoreId);
+        }
+
+        // =========================================================
+        // PROFILS DE PRODUITS & CHARGEMENT DU CATALOGUE
+        // =========================================================
         function parseProductProfile(prod) {
             const rawName = (prod.name || '').trim();
             const norm = normalizeText(rawName);
 
-            // 1. Petites / Moyennes / Grandes (ex: Frites, Gaufrettes)
             const sizeAdjMatch = norm.match(/^(petites?|moyennes?|grandes?)\s+(.+)$/);
             if (sizeAdjMatch) {
                 const adj = sizeAdjMatch[1];
                 const baseNorm = sizeAdjMatch[2].trim();
                 const rank = adj.startsWith('petit') ? 1 : (adj.startsWith('moyen') ? 2 : 3);
                 const cleanBase = rawName.replace(/^(petites?|moyennes?|grandes?)\s+/i, '').trim();
-                return {
-                    family: `adj:${baseNorm}`,
-                    displayName: capitalizeFirst(cleanBase),
-                    rank,
-                    exactName: norm
-                };
+                return { family: `adj:${baseNorm}`, displayName: capitalizeFirst(cleanBase), rank, exactName: norm };
             }
 
-            // 2. Boissons avec contenance en cl : ex "Coca-Cola® (40cl)"
             const clMatch = norm.match(/^(.*?)\s*\(?(\d+)\s*cl\)?$/);
             if (clMatch && clMatch[1].trim()) {
                 const cleanBase = rawName.replace(/\s*\(?\d+\s*cl\)?$/i, '').trim();
-                return {
-                    family: `drink:${clMatch[1].trim()}`,
-                    displayName: cleanBase,
-                    rank: parseInt(clMatch[2], 10),
-                    exactName: norm
-                };
+                return { family: `drink:${clMatch[1].trim()}`, displayName: cleanBase, rank: parseInt(clMatch[2], 10), exactName: norm };
             }
 
-            // 3. Snacks par quantité : ex "Onion Rings (6)", "King Nuggets® (7)", "Chili Cheese (4)"
             const countMatch = norm.match(/^(.*?)\s*\((\d+)\)$/);
             if (countMatch && countMatch[1].trim()) {
                 const cleanBase = rawName.replace(/\s*\(\d+\)$/, '').trim();
-                return {
-                    family: `count:${countMatch[1].trim()}`,
-                    displayName: cleanBase,
-                    rank: parseInt(countMatch[2], 10),
-                    exactName: norm
-                };
+                return { family: `count:${countMatch[1].trim()}`, displayName: cleanBase, rank: parseInt(countMatch[2], 10), exactName: norm };
             }
 
-            // 4. Mini King Sundae / King Sundae
             const sundaeMatch = norm.match(/^(mini\s+)?(king sundae\s+.+)$/);
             if (sundaeMatch) {
                 const cleanBase = rawName.replace(/^mini\s+/i, '').trim();
-                return {
-                    family: `sundae:${sundaeMatch[2].trim()}`,
-                    displayName: cleanBase,
-                    rank: sundaeMatch[1] ? 1 : 2,
-                    exactName: norm
-                };
+                return { family: `sundae:${sundaeMatch[2].trim()}`, displayName: cleanBase, rank: sundaeMatch[1] ? 1 : 2, exactName: norm };
             }
 
-            // 5. King Fusion / Extra King Fusion
             const fusionMatch = norm.match(/^(extra\s+)?(king fusion\s+.+)$/);
             if (fusionMatch) {
                 const cleanBase = rawName.replace(/^extra\s+/i, '').trim();
-                return {
-                    family: `fusion:${fusionMatch[2].trim()}`,
-                    displayName: cleanBase,
-                    rank: fusionMatch[1] ? 2 : 1,
-                    exactName: norm
-                };
+                return { family: `fusion:${fusionMatch[2].trim()}`, displayName: cleanBase, rank: fusionMatch[1] ? 2 : 1, exactName: norm };
             }
 
-            return {
-                family: `exact:${norm}`,
-                displayName: rawName,
-                rank: 1,
-                exactName: norm
-            };
+            return { family: `exact:${norm}`, displayName: rawName, rank: 1, exactName: norm };
         }
 
-        // Vérifie si un produit proposé dans une étape de menu correspond à la ligne du panier
         function checkGroupCompatibility(cartGroup, menuProd, allowUpgrades) {
             if (cartGroup.isFamily) {
                 return menuProd._profile.family === cartGroup.family.key ? 'any_size' : null;
@@ -261,7 +425,6 @@
             const mProf = menuProd._profile;
 
             if (wProf.exactName === mProf.exactName) return 'exact';
-
             if (allowUpgrades && wProf.family === mProf.family && mProf.rank > wProf.rank) {
                 return 'upgrade';
             }
@@ -292,16 +455,21 @@
             return 'main';
         }
 
-        async function loadCatalog() {
+        async function loadCatalog(storeId) {
             const statusEl = document.getElementById('catalog-status');
+            const calcBtn = document.getElementById('btn-calculate');
+            calcBtn.disabled = true;
+            statusEl.textContent = `⏳ Chargement des tarifs officiels du restaurant ${storeId}...`;
+            statusEl.className = 'text-sm text-orange-600 font-medium mt-1';
+
             try {
-                const response = await fetch(WEBHOOK_URL);
+                const response = await fetch(`${WEBHOOK_URL}?store=${encodeURIComponent(storeId)}`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const rawData = await response.json();
                 const payload = Array.isArray(rawData) ? rawData[0] : rawData;
 
                 if (!payload || !payload.catalog) {
-                    throw new Error('Réponse JSON invalide depuis n8n');
+                    throw new Error('Catalogue indisponible pour ce restaurant');
                 }
 
                 catalog = payload.catalog;
@@ -317,7 +485,6 @@
                     .filter(p => p.canBuyAlone && p._aloneCents > 0)
                     .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
-                // Construire automatiquement les familles ayant au moins 2 tailles achetables
                 const tempFamilies = {};
                 for (const p of buyableProducts) {
                     const fKey = p._profile.family;
@@ -327,7 +494,6 @@
 
                 multiSizeFamilies = {};
                 for (const [fKey, members] of Object.entries(tempFamilies)) {
-                    // Vérifier qu'il y a au moins 2 rangs/tailles distincts
                     const distinctRanks = new Set(members.map(m => m._profile.rank));
                     if (members.length >= 2 && distinctRanks.size >= 2) {
                         members.sort((a, b) => (a._profile.rank - b._profile.rank) || (a._aloneCents - b._aloneCents));
@@ -343,9 +509,7 @@
                             minAloneCents: cheapestMember._aloneCents
                         };
                         multiSizeFamilies[fKey] = famObj;
-                        for (const m of members) {
-                            m._familyObj = famObj;
-                        }
+                        for (const m of members) m._familyObj = famObj;
                     }
                 }
 
@@ -354,13 +518,41 @@
 
                 populateAllSelects();
 
-                statusEl.textContent = `✅ Catalogue chargé (${catalog.menus.length} menus, ${buyableProducts.length} produits, ${multiSizeFamiliesList.length} familles multi-tailles)`;
+                // Nettoyer du panier d'éventuels produits exclusifs qui n'existeraient pas dans le nouveau restaurant
+                reconcileCartWithNewCatalog();
+                updateCartDisplay();
+                recalculateIfVisible();
+
+                const storeObj = allRestaurants.find(r => r.id === storeId);
+                const storeLabel = storeObj ? `BK ${storeObj.name}` : storeId;
+                statusEl.textContent = `✅ Tarifs en direct de ${storeLabel} (${catalog.menus.length} menus, ${buyableProducts.length} produits)`;
                 statusEl.className = 'text-sm text-emerald-700 font-medium mt-1';
-                document.getElementById('btn-calculate').disabled = false;
+                calcBtn.disabled = false;
             } catch (error) {
-                console.error('Erreur chargement n8n :', error);
-                statusEl.textContent = `❌ Impossible de charger le catalogue n8n (${error.message}).`;
+                console.error('Erreur chargement catalogue :', error);
+                statusEl.textContent = `❌ Impossible de charger le catalogue de ce restaurant (${error.message}). Choisis-en un autre ci-dessus.`;
                 statusEl.className = 'text-sm text-red-600 font-semibold mt-1';
+            }
+        }
+
+        // Conserve le panier lors d'un changement de restaurant si les produits y sont aussi vendus
+        function reconcileCartWithNewCatalog() {
+            const updatedCart = [];
+            for (const entry of cart) {
+                if (entry.isFamily) {
+                    if (multiSizeFamilies[entry.familyKey]) {
+                        updatedCart.push(entry);
+                    }
+                } else {
+                    const directProd = productsById[entry.id];
+                    if (directProd && directProd.canBuyAlone && directProd._aloneCents > 0) {
+                        updatedCart.push(entry);
+                    }
+                }
+            }
+            cart = updatedCart;
+            if (cart.length === 0) {
+                document.getElementById('results-container').classList.add('hidden');
             }
         }
 
@@ -377,7 +569,6 @@
                 groups[groupLabel].push(item);
             }
 
-            // Associer les familles multi-tailles au bon optgroup
             const familiesByGroup = {};
             for (const fam of multiSizeFamiliesList) {
                 if (fam.bucket !== bucketName) continue;
@@ -392,7 +583,6 @@
                 const optgroup = document.createElement('optgroup');
                 optgroup.label = groupName;
 
-                // 1. Options "Peu importe la taille" en tête du sous-groupe
                 for (const fam of (familiesByGroup[groupName] || [])) {
                     const opt = document.createElement('option');
                     opt.value = `FAM:${fam.key}`;
@@ -400,7 +590,6 @@
                     optgroup.appendChild(opt);
                 }
 
-                // 2. Tailles précises individuelles
                 for (const item of (groups[groupName] || [])) {
                     const opt = document.createElement('option');
                     opt.value = `PROD:${item.id}`;
@@ -423,7 +612,6 @@
             populateSelectWithGroups('select-sweet', buckets.sweet, 'sweet');
         }
 
-        // Recherche rapide incluant les options "Peu importe la taille" + les produits précis
         function handleQuickSearch() {
             const input = document.getElementById('quick-search');
             const box = document.getElementById('quick-search-results');
@@ -484,10 +672,17 @@
         }
 
         document.addEventListener('click', (e) => {
-            const box = document.getElementById('quick-search-results');
-            const input = document.getElementById('quick-search');
-            if (box && !box.contains(e.target) && e.target !== input) {
-                box.classList.add('hidden');
+            const qBox = document.getElementById('quick-search-results');
+            const qInput = document.getElementById('quick-search');
+            if (qBox && !qBox.contains(e.target) && e.target !== qInput) {
+                qBox.classList.add('hidden');
+            }
+
+            const sBox = document.getElementById('store-search-results');
+            const sInput = document.getElementById('store-search');
+            const geoBtn = document.getElementById('btn-geoloc');
+            if (sBox && !sBox.contains(e.target) && e.target !== sInput && e.target !== geoBtn) {
+                sBox.classList.add('hidden');
             }
         });
 
@@ -515,7 +710,6 @@
             recalculateIfVisible();
         }
 
-        // Permet de changer directement dans le panier entre "Peu importe la taille" et une taille précise
         function switchCartEntryMode(cartIndex, newToken) {
             const current = cart[cartIndex];
             if (!current || current.key === newToken) return;
@@ -592,7 +786,6 @@
                 const lineCents = unitCents * entry.qty;
                 totalRetailCents += lineCents;
 
-                // Sélecteur de taille directement intégré dans la ligne du panier si la famille a plusieurs tailles
                 let sizeSelectorHtml = '';
                 if (famObj) {
                     const famToken = `FAM:${famObj.key}`;
@@ -642,6 +835,9 @@
             `;
         }
 
+        // =========================================================
+        // MOTEUR COMBINATOIRE EXACT (DIJKSTRA)
+        // =========================================================
         function getSupplementCents(prod, sizeCode) {
             if (!prod || !prod.prices) return 0;
             const key = String(sizeCode || 'm').toLowerCase();
@@ -685,7 +881,6 @@
             const T = cartGroups.length;
             const actions = [];
 
-            // 1. Actions "À l'unité" (pour une famille "Peu importe la taille", on prend la taille la moins chère vendue seule)
             for (let g = 0; g < T; g++) {
                 const cg = cartGroups[g];
                 const prod = cg.isFamily ? cg.family.cheapestMember : cg.product;
@@ -702,7 +897,6 @@
                 });
             }
 
-            // 2. Actions "Menu"
             const menuBucketsByConsume = new Map();
 
             for (const menu of catalog.menus) {
@@ -743,7 +937,6 @@
                                     bestMatch = cand;
                                 } else if (cand.supp === bestMatch.supp) {
                                     if (cg.isFamily) {
-                                        // En mode "Peu importe la taille", à prix identique dans le même menu, on préfère la plus grande taille !
                                         if (cand.rank > bestMatch.rank) bestMatch = cand;
                                     } else {
                                         if (cand.matchType === 'exact' && bestMatch.matchType !== 'exact') {
@@ -1231,7 +1424,16 @@
             `;
         }
 
-        loadCatalog();
+        // Lancement simultané de la liste des restaurants + du catalogue du restaurant actif
+        async function initApp() {
+            await Promise.all([
+                loadRestaurantsList(),
+                loadCatalog(currentStoreId)
+            ]);
+            updateStoreHeaderUI();
+        }
+
+        initApp();
     </script>
 </body>
 </html>
