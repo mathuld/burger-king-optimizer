@@ -94,9 +94,11 @@
                     <div class="min-w-0">
                         <div class="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-neutral-500">Restaurant sélectionné</div>
                         <div class="font-extrabold text-stone-900 dark:text-neutral-100 text-base truncate" id="current-store-name">
-                            Chargement du restaurant...
+                            Aucun restaurant sélectionné
                         </div>
-                        <div class="text-xs text-stone-500 dark:text-neutral-400 truncate" id="current-store-address"></div>
+                        <div class="text-xs text-stone-500 dark:text-neutral-400 truncate" id="current-store-address">
+                            Choisis ton Burger King ci-dessous pour charger les tarifs
+                        </div>
                     </div>
                 </div>
 
@@ -107,7 +109,7 @@
                             id="store-search"
                             oninput="handleStoreSearch()"
                             onfocus="handleStoreSearch()"
-                            placeholder="🔎 Changer de BK (ville, code postal, nom...)"
+                            placeholder="🔎 Choisir un BK (ville, code postal, nom...)"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-950 text-stone-800 dark:text-neutral-100 placeholder-stone-400 dark:placeholder-neutral-500 border border-stone-300 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
                         />
                         <div id="store-search-results" class="hidden absolute z-30 mt-1 w-full bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto"></div>
@@ -176,9 +178,10 @@
                     <input
                         type="text"
                         id="quick-search"
+                        disabled
                         oninput="handleQuickSearch()"
-                        placeholder="🔍 Rechercher un produit (Frites, Coca, Whopper...)"
-                        class="w-full pl-3 pr-3 py-2 text-sm bg-white dark:bg-neutral-950 text-stone-800 dark:text-neutral-100 placeholder-stone-400 dark:placeholder-neutral-500 border border-stone-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
+                        placeholder="🔍 Choisis d'abord un restaurant..."
+                        class="w-full pl-3 pr-3 py-2 text-sm bg-white dark:bg-neutral-950 disabled:opacity-50 text-stone-800 dark:text-neutral-100 placeholder-stone-400 dark:placeholder-neutral-500 border border-stone-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
                     />
                     <div id="quick-search-results" class="hidden absolute z-20 mt-1 w-full bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-700 rounded-lg shadow-2xl max-h-72 overflow-y-auto"></div>
                 </div>
@@ -189,11 +192,11 @@
                 <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍔 Burgers, Wraps & Box</label>
-                        <select id="select-main" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <select id="select-main" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir un plat --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-main')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
+                    <button id="btn-add-main" disabled onclick="addFromSelect('select-main')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
@@ -201,11 +204,11 @@
                 <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍟 Frites, Nuggets & Snacks</label>
-                        <select id="select-side" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <select id="select-side" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir un snack / side --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-side')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
+                    <button id="btn-add-side" disabled onclick="addFromSelect('select-side')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
@@ -213,11 +216,11 @@
                 <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🥤 Boissons & Cafés</label>
-                        <select id="select-drink" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <select id="select-drink" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir une boisson --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-drink')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
+                    <button id="btn-add-drink" disabled onclick="addFromSelect('select-drink')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
@@ -225,11 +228,11 @@
                 <div class="bg-stone-50 dark:bg-neutral-950/70 p-3.5 rounded-xl border border-stone-200 dark:border-neutral-800 flex flex-col justify-between">
                     <div>
                         <label class="block text-sm font-bold text-stone-700 dark:text-neutral-200 mb-2">🍦 Glaces, Desserts & Sauces</label>
-                        <select id="select-sweet" class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
+                        <select id="select-sweet" disabled class="w-full p-2 text-sm border border-stone-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 disabled:opacity-50 text-stone-800 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 focus:outline-none mb-2.5">
                             <option value="">-- Choisir dessert / sauce --</option>
                         </select>
                     </div>
-                    <button onclick="addFromSelect('select-sweet')" class="w-full bg-orange-100 dark:bg-orange-500/15 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
+                    <button id="btn-add-sweet" disabled onclick="addFromSelect('select-sweet')" class="w-full bg-orange-100 dark:bg-orange-500/15 disabled:opacity-40 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 dark:hover:bg-orange-500/25 transition">
                         + Ajouter au panier
                     </button>
                 </div>
@@ -270,7 +273,7 @@
 
             <button
                 id="btn-calculate"
-                onclick="calculateBestCombinations()"
+                onclick="calculateBestCombinations(true)"
                 disabled
                 class="w-full bg-orange-600 dark:bg-gradient-to-r dark:from-orange-600 dark:to-amber-600 disabled:bg-stone-300 dark:disabled:from-neutral-800 dark:disabled:to-neutral-800 disabled:text-stone-500 text-white py-3.5 rounded-xl font-extrabold text-base hover:bg-orange-700 dark:hover:from-orange-500 dark:hover:to-amber-500 transition shadow-lg dark:shadow-orange-950/50"
             >
@@ -280,7 +283,7 @@
 
         <!-- Section 2 : Résultats Podium Top 3 -->
         <div id="results-container" class="hidden">
-            <div id="retail-banner" class="bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 rounded-xl p-4 mb-6 text-center shadow-sm dark:shadow-md"></div>
+            <div id="retail-banner" class="hidden bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 rounded-xl p-4 mb-6 text-center shadow-sm dark:shadow-md"></div>
             <h2 class="text-2xl font-extrabold mb-6 text-center text-stone-800 dark:text-neutral-100">
                 🏆 Top 3 des combinaisons exactes à commander sur la borne
             </h2>
@@ -293,7 +296,6 @@
         const STORAGE_STORE_KEY = 'bk_optimizer_selected_store';
         const STORAGE_CROWNS_KEY = 'bk_optimizer_crowns';
         const STORAGE_THEME_KEY = 'bk_optimizer_theme';
-        const DEFAULT_STORE_ID = 'K1376';
 
         // =========================================================
         // SWITCH MODE SOMBRE / MODE LUMIÈRE
@@ -415,7 +417,7 @@
 
         let allRestaurants = [];
         let kingdomLevels = FALLBACK_KINGDOM_LEVELS;
-        let currentStoreId = localStorage.getItem(STORAGE_STORE_KEY) || DEFAULT_STORE_ID;
+        let currentStoreId = localStorage.getItem(STORAGE_STORE_KEY) || null;
         let userCrowns = Math.max(0, parseInt(localStorage.getItem(STORAGE_CROWNS_KEY) || '0', 10) || 0);
 
         let catalog = null;
@@ -469,6 +471,35 @@
             const a = Math.sin(dLat / 2) ** 2 +
                       Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
             return 2 * R * Math.asin(Math.sqrt(a));
+        }
+
+        function setCatalogControlsEnabled(enabled) {
+            const ids = ['quick-search', 'select-main', 'select-side', 'select-drink', 'select-sweet', 'btn-add-main', 'btn-add-side', 'btn-add-drink', 'btn-add-sweet', 'btn-calculate'];
+            for (const id of ids) {
+                const el = document.getElementById(id);
+                if (el) el.disabled = !enabled;
+            }
+            const quickSearch = document.getElementById('quick-search');
+            if (quickSearch) {
+                quickSearch.placeholder = enabled
+                    ? '🔍 Rechercher un produit (Frites, Coca, Whopper...)'
+                    : '🔍 Choisis d\'abord un restaurant...';
+            }
+        }
+
+        function updateCatalogStatusText() {
+            const statusEl = document.getElementById('catalog-status');
+            if (!currentStoreId) {
+                statusEl.textContent = 'Sélectionne ton restaurant Burger King ci-dessous pour charger les tarifs.';
+                statusEl.className = 'text-sm text-stone-500 dark:text-neutral-400 mt-1';
+                return;
+            }
+            if (!catalog) return;
+
+            const storeObj = allRestaurants.find(r => r.id === currentStoreId);
+            const storeLabel = storeObj ? `de Burger King ${storeObj.name}` : 'du restaurant sélectionné';
+            statusEl.textContent = `✅ Tarifs en direct ${storeLabel} (${catalog.menus.length} menus, ${buyableProducts.length} produits)`;
+            statusEl.className = 'text-sm text-emerald-700 dark:text-emerald-400 font-medium mt-1';
         }
 
         // =========================================================
@@ -684,27 +715,33 @@
                 if (payload && Array.isArray(payload.restaurants)) {
                     allRestaurants = payload.restaurants.map(r => ({
                         ...r,
-                        _searchText: normalizeText(`${r.name} ${r.city} ${r.zipCode} ${r.address} ${r.id}`)
+                        _searchText: normalizeText(`${r.name} ${r.city} ${r.zipCode} ${r.address}`)
                     }));
                 }
-                updateStoreHeaderUI();
             } catch (err) {
                 console.warn('Impossible de charger la liste des restaurants :', err);
-                updateStoreHeaderUI();
             }
+            updateStoreHeaderUI();
+            updateCatalogStatusText();
         }
 
         function updateStoreHeaderUI() {
             const nameEl = document.getElementById('current-store-name');
             const addrEl = document.getElementById('current-store-address');
-            const found = allRestaurants.find(r => r.id === currentStoreId);
 
+            if (!currentStoreId) {
+                nameEl.textContent = 'Aucun restaurant sélectionné';
+                addrEl.textContent = 'Recherche ta ville ou utilise la géolocalisation ci-dessous';
+                return;
+            }
+
+            const found = allRestaurants.find(r => r.id === currentStoreId);
             if (found) {
-                nameEl.innerHTML = `Burger King ${escapeHtml(found.name)} <span class="text-xs font-bold bg-orange-100 dark:bg-orange-500/20 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 px-2 py-0.5 rounded-full ml-1">${escapeHtml(found.id)}</span>`;
+                nameEl.textContent = `Burger King ${found.name}`;
                 addrEl.textContent = found.address || '';
             } else {
-                nameEl.innerHTML = `Restaurant <span class="text-xs font-bold bg-orange-100 dark:bg-orange-500/20 border border-transparent dark:border-orange-500/30 text-orange-800 dark:text-orange-300 px-2 py-0.5 rounded-full ml-1">${escapeHtml(currentStoreId)}</span>`;
-                addrEl.textContent = allRestaurants.length > 0 ? 'Code restaurant personnalisé' : 'Chargement des restaurants...';
+                nameEl.textContent = 'Restaurant sélectionné';
+                addrEl.textContent = allRestaurants.length > 0 ? '' : 'Chargement des informations...';
             }
         }
 
@@ -718,9 +755,12 @@
 
             box.innerHTML = stores.map(r => {
                 const isSelected = r.id === currentStoreId;
-                const distBadge = typeof r._distanceKm === 'number'
-                    ? `<span class="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/15 border border-transparent dark:border-emerald-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">${r._distanceKm.toFixed(1).replace('.', ',')} km</span>`
-                    : `<span class="text-xs font-semibold text-stone-400 dark:text-neutral-500 whitespace-nowrap">${escapeHtml(r.zipCode || r.id)}</span>`;
+                let rightBadge = '';
+                if (typeof r._distanceKm === 'number') {
+                    rightBadge = `<span class="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/15 border border-transparent dark:border-emerald-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">${r._distanceKm.toFixed(1).replace('.', ',')} km</span>`;
+                } else if (r.zipCode) {
+                    rightBadge = `<span class="text-xs font-semibold text-stone-400 dark:text-neutral-500 whitespace-nowrap">${escapeHtml(r.zipCode)}</span>`;
+                }
 
                 return `
                     <button
@@ -734,7 +774,7 @@
                             </div>
                             <div class="text-xs text-stone-500 dark:text-neutral-400 line-clamp-1">${escapeHtml(r.address)}</div>
                         </div>
-                        ${distBadge}
+                        ${rightBadge}
                     </button>
                 `;
             }).join('');
@@ -897,9 +937,11 @@
 
         async function loadCatalog(storeId) {
             const statusEl = document.getElementById('catalog-status');
-            const calcBtn = document.getElementById('btn-calculate');
-            calcBtn.disabled = true;
-            statusEl.textContent = `⏳ Chargement des tarifs officiels du restaurant ${storeId}...`;
+            setCatalogControlsEnabled(false);
+
+            const storeObj = allRestaurants.find(r => r.id === storeId);
+            const loadingTarget = storeObj ? `de Burger King ${storeObj.name}` : 'du restaurant sélectionné';
+            statusEl.textContent = `⏳ Chargement des tarifs officiels ${loadingTarget}...`;
             statusEl.className = 'text-sm text-orange-600 dark:text-orange-400 font-medium mt-1';
 
             try {
@@ -958,15 +1000,11 @@
 
                 bindKingdomRewardsToCatalog();
                 populateAllSelects();
+                setCatalogControlsEnabled(true);
                 reconcileCartWithNewCatalog();
                 updateCartDisplay();
                 recalculateIfVisible();
-
-                const storeObj = allRestaurants.find(r => r.id === storeId);
-                const storeLabel = storeObj ? `BK ${storeObj.name}` : storeId;
-                statusEl.textContent = `✅ Tarifs en direct de ${storeLabel} (${catalog.menus.length} menus, ${buyableProducts.length} produits)`;
-                statusEl.className = 'text-sm text-emerald-700 dark:text-emerald-400 font-medium mt-1';
-                calcBtn.disabled = false;
+                updateCatalogStatusText();
             } catch (error) {
                 console.error('Erreur chargement catalogue :', error);
                 statusEl.textContent = `❌ Impossible de charger le catalogue de ce restaurant (${error.message}).`;
@@ -1183,7 +1221,7 @@
         function recalculateIfVisible() {
             const resultsEl = document.getElementById('results-container');
             if (!resultsEl.classList.contains('hidden') && cart.length > 0) {
-                calculateBestCombinations();
+                calculateBestCombinations(false);
             }
         }
 
@@ -1439,8 +1477,6 @@
 
                     if (stepChoices.every(sc => sc.groupMatches.length === 0)) continue;
 
-                    // Si "Uniquement les produits demandés" est coché : toute étape obligatoire sans correspondance
-                    // dans le panier (hors choix "Rien du tout") rend ce menu inéligible
                     if (noBonusItems) {
                         const hasForcedExtraStep = stepChoices.some(sc =>
                             sc.groupMatches.length === 0 && !normalizeText(sc.bonus.chosenProd.name).includes('rien du tout')
@@ -1503,8 +1539,6 @@
                             }
                         }
 
-                        // Autoriser une étape non demandée uniquement si les bonus sont permis,
-                        // ou s'il s'agit de l'option "Rien du tout" (0 produit en plus)
                         const isNothingOption = normalizeText(sc.bonus.chosenProd.name).includes('rien du tout');
                         if (!noBonusItems || isNothingOption) {
                             curStepsDetail[stepIdx] = {
@@ -1727,7 +1761,7 @@
             return `${withPrefix} (${sizeCode})`;
         }
 
-        function calculateBestCombinations() {
+        function calculateBestCombinations(shouldScroll = false) {
             if (!catalog || cart.length === 0) return;
 
             const allowUpgrades = document.getElementById('opt-upgrades').checked;
@@ -1756,6 +1790,7 @@
             resultsContainer.classList.remove('hidden');
 
             if (topSolutions.length === 0) {
+                retailBanner.classList.add('hidden');
                 podiumGrid.innerHTML = `<div class="col-span-3 text-center text-red-600 dark:text-red-400 font-bold">Aucune combinaison trouvée.</div>`;
                 return;
             }
@@ -1766,15 +1801,17 @@
                 ? ` + <span class="inline-block bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-300 font-extrabold px-2.5 py-0.5 rounded-full">👑 ${best.crownsUsed} couronnes utilisées</span>`
                 : '';
 
-            retailBanner.innerHTML = bestSavings > 0
-                ? `<p class="text-sm md:text-base text-stone-700 dark:text-neutral-300">
+            if (bestSavings > 0) {
+                retailBanner.innerHTML = `<p class="text-sm md:text-base text-stone-700 dark:text-neutral-300">
                      Prix hors menu & sans couronnes : <b class="line-through text-stone-500">${formatEuros(retailCents)}</b>
                      — Avec la combinaison #1, tu paies <b class="text-emerald-700 dark:text-emerald-400">${formatEuros(best.costCents)}</b>
                      soit <span class="inline-block bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-extrabold px-2.5 py-0.5 rounded-full ml-1">−${formatEuros(bestSavings)} d'économie réelle</span>${crownsNote} !
-                   </p>`
-                : `<p class="text-sm md:text-base text-stone-700 dark:text-neutral-300">
-                     Prix optimal vérifié : <b class="text-orange-600 dark:text-orange-400">${formatEuros(best.costCents)}</b>.
                    </p>`;
+                retailBanner.classList.remove('hidden');
+            } else {
+                retailBanner.innerHTML = '';
+                retailBanner.classList.add('hidden');
+            }
 
             const cardsHtml = [];
 
@@ -1793,7 +1830,10 @@
             }
 
             podiumGrid.innerHTML = cardsHtml.join('');
-            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            if (shouldScroll) {
+                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
 
         function renderMenuBlock(mAct, labelIndex, isKingdomMenu) {
@@ -1904,7 +1944,7 @@
             if (solution.crownsUsed > 0 && solution.costCents === 0) {
                 title = '100 % Offert avec tes Couronnes !';
             } else if (solution.crownsUsed > 0) {
-                title = `Combo Optimisé + Kingdom`;
+                title = `Commande Optimisée + Kingdom`;
             } else if (totalMenusCount === 0) {
                 title = '100 % À l\'unité (Hors Menu)';
             } else if (menus.length === 1 && totalAlonesCount === 0) {
@@ -2039,12 +2079,19 @@
             updateThemeSwitchUI();
             document.getElementById('input-crowns').value = userCrowns;
             updateCrownsUI();
-            await Promise.all([
-                loadRestaurantsList(),
-                loadKingdomLevels(),
-                loadCatalog(currentStoreId)
-            ]);
             updateStoreHeaderUI();
+            updateCatalogStatusText();
+
+            const tasks = [
+                loadRestaurantsList(),
+                loadKingdomLevels()
+            ];
+            if (currentStoreId) {
+                tasks.push(loadCatalog(currentStoreId));
+            }
+            await Promise.all(tasks);
+            updateStoreHeaderUI();
+            updateCatalogStatusText();
         }
 
         initApp();
