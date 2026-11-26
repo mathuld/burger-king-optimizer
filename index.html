@@ -4,248 +4,1013 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Burger King Combo Optimizer</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-center text-orange-600 mb-8">🍔 Burger King Combo Optimizer</h1>
+<body class="bg-stone-100 min-h-screen py-6 px-4 text-stone-800">
+    <div class="max-w-6xl mx-auto">
+        <!-- En-tête -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-orange-600 tracking-tight">
+                🍔 Burger King Combo Optimizer
+            </h1>
+            <p class="text-sm text-stone-500 mt-1" id="catalog-status">
+                Connexion au catalogue Burger King via n8n...
+            </p>
+        </header>
 
-        <!-- Section Sélection / Panier -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-xl font-semibold mb-4">1. Ce que tu veux manger (Envies)</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <!-- Choix du Burger -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Burger / Plat principal</label>
-                    <select id="select-burger" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
-                        <option value="">-- Ajouter un burger --</option>
-                    </select>
-                    <button onclick="addItem('burger')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
-                        + Ajouter ce burger
+        <!-- Section 1 : Sélection des envies -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-stone-200 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
+                <h2 class="text-xl font-bold text-stone-800">1. Sélectionne exactement ce que tu veux manger</h2>
+                <!-- Barre de recherche rapide -->
+                <div class="relative w-full md:w-80">
+                    <input
+                        type="text"
+                        id="quick-search"
+                        oninput="handleQuickSearch()"
+                        placeholder="🔍 Recherche rapide (Whopper, Sundae...)"
+                        class="w-full pl-3 pr-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                    />
+                    <div id="quick-search-results" class="hidden absolute z-20 mt-1 w-full bg-white border border-stone-200 rounded-lg shadow-xl max-h-64 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- 4 Catégories de produits -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Burgers / Wraps / Salades / Box -->
+                <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
+                    <div>
+                        <label class="block text-sm font-bold text-stone-700 mb-2">🍔 Burgers, Wraps & Box</label>
+                        <select id="select-main" class="w-full p-2 text-sm border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-orange-500 mb-2.5">
+                            <option value="">-- Choisir un plat --</option>
+                        </select>
+                    </div>
+                    <button onclick="addFromSelect('select-main')" class="w-full bg-orange-100 text-orange-800 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 transition">
+                        + Ajouter au panier
                     </button>
                 </div>
-                <!-- Choix de l'accompagnement -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Accompagnement (Optionnel)</label>
-                    <select id="select-side" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
-                        <option value="">-- Ajouter frites/side --</option>
-                    </select>
-                    <button onclick="addItem('side')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
-                        + Ajouter side
+
+                <!-- Frites & Snacks -->
+                <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
+                    <div>
+                        <label class="block text-sm font-bold text-stone-700 mb-2">🍟 Frites, Nuggets & Snacks</label>
+                        <select id="select-side" class="w-full p-2 text-sm border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-orange-500 mb-2.5">
+                            <option value="">-- Choisir un snack / side --</option>
+                        </select>
+                    </div>
+                    <button onclick="addFromSelect('select-side')" class="w-full bg-orange-100 text-orange-800 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 transition">
+                        + Ajouter au panier
                     </button>
                 </div>
-                <!-- Choix de la boisson -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Boisson / Dessert (Optionnel)</label>
-                    <select id="select-drink" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 mb-2">
-                        <option value="">-- Ajouter boisson --</option>
-                    </select>
-                    <button onclick="addItem('drink')" class="w-full bg-gray-200 text-gray-800 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
-                        + Ajouter boisson
+
+                <!-- Boissons & Cafés -->
+                <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
+                    <div>
+                        <label class="block text-sm font-bold text-stone-700 mb-2">🥤 Boissons & Cafés</label>
+                        <select id="select-drink" class="w-full p-2 text-sm border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-orange-500 mb-2.5">
+                            <option value="">-- Choisir une boisson --</option>
+                        </select>
+                    </div>
+                    <button onclick="addFromSelect('select-drink')" class="w-full bg-orange-100 text-orange-800 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 transition">
+                        + Ajouter au panier
+                    </button>
+                </div>
+
+                <!-- Glaces, Desserts & Sauces -->
+                <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 flex flex-col justify-between">
+                    <div>
+                        <label class="block text-sm font-bold text-stone-700 mb-2">🍦 Glaces, Desserts & Sauces</label>
+                        <select id="select-sweet" class="w-full p-2 text-sm border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-orange-500 mb-2.5">
+                            <option value="">-- Choisir dessert / sauce --</option>
+                        </select>
+                    </div>
+                    <button onclick="addFromSelect('select-sweet')" class="w-full bg-orange-100 text-orange-800 py-2 rounded-lg text-sm font-semibold hover:bg-orange-200 transition">
+                        + Ajouter au panier
                     </button>
                 </div>
             </div>
 
-            <!-- Affichage du Panier -->
-            <div class="border-t pt-4 mb-6">
-                <h3 class="text-md font-semibold text-gray-700 mb-2">🛒 Ton Panier d'envies :</h3>
-                <ul id="cart-list" class="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 mb-4 min-h-[60px]">
-                    <span class="italic text-gray-400">Ton panier est vide... Ajoute tes envies !</span>
-                </ul>
+            <!-- Options d'optimisation -->
+            <div class="flex flex-col sm:flex-row gap-4 bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 mb-6 text-sm">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="opt-upgrades" checked onchange="recalculateIfVisible()" class="w-4 h-4 accent-orange-600 rounded">
+                    <span><b>Autoriser la taille supérieure</b> si c'est plus rentable <span class="text-stone-500">(ex : Moyennes frites au lieu de Petites)</span></span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="opt-kids" checked onchange="recalculateIfVisible()" class="w-4 h-4 accent-orange-600 rounded">
+                    <span><b>Inclure les Menus Enfants</b> <span class="text-stone-500">(King Junior / King JR+, commandables sur borne)</span></span>
+                </label>
             </div>
 
-            <button onclick="calculateBestCombinations()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow-lg">
-                Tester toutes les combinaisons et trouver le meilleur prix 🚀
+            <!-- Panier -->
+            <div class="border-t border-stone-200 pt-4 mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-base font-bold text-stone-700">🛒 Ton Panier d'envies</h3>
+                    <button onclick="clearCart()" id="btn-clear-cart" class="hidden text-xs text-red-600 hover:underline font-semibold">
+                        Vider le panier
+                    </button>
+                </div>
+                <div id="cart-list" class="bg-stone-50 p-4 rounded-xl border border-stone-200 text-sm text-stone-600 min-h-[64px]">
+                    <span class="italic text-stone-400">Ton panier est vide... Ajoute ce que tu veux manger ci-dessus !</span>
+                </div>
+            </div>
+
+            <button
+                id="btn-calculate"
+                onclick="calculateBestCombinations()"
+                disabled
+                class="w-full bg-orange-600 disabled:bg-stone-300 text-white py-3.5 rounded-xl font-extrabold text-base hover:bg-orange-700 transition shadow-lg"
+            >
+                Calculer le vrai Top 3 des prix sur la borne 🚀
             </button>
         </div>
 
-        <!-- Section Résultats (Podium Top 3) -->
+        <!-- Section 2 : Résultats Podium Top 3 -->
         <div id="results-container" class="hidden">
-            <h2 class="text-xl font-semibold mb-4 text-center">🏆 Top 3 des meilleures combinaisons tarifaires</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" id="podium-grid"></div>
+            <div id="retail-banner" class="bg-white border border-stone-200 rounded-xl p-4 mb-6 text-center shadow-sm"></div>
+            <h2 class="text-2xl font-extrabold mb-6 text-center text-stone-800">
+                🏆 Top 3 des combinaisons exactes à commander sur la borne
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch" id="podium-grid"></div>
         </div>
     </div>
 
     <script>
         const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
-        let globalCatalog = null;
-        let userCart = [];
 
+        let catalog = null;
+        let productsById = {};
+        let buyableProducts = [];
+        // Panier stocké sous forme [{ id, qty }]
+        let cart = [];
+
+        // Conversion euros -> centimes entiers (évite toute erreur d'arrondi flottant)
+        function toCents(euros) {
+            return Math.round((Number(euros) || 0) * 100);
+        }
+
+        function formatEuros(cents) {
+            return (cents / 100).toFixed(2).replace('.', ',') + ' €';
+        }
+
+        function normalizeText(str) {
+            return (str || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/®|™/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        // Analyse la famille et la taille d'un produit pour détecter les vrais surclassements (ex: 25cl -> 40cl -> 50cl)
+        function parseProductProfile(prod) {
+            const norm = normalizeText(prod.name);
+
+            // 1. Frites classiques
+            const fritesMatch = norm.match(/^(petites|moyennes|grandes)\s+frites$/);
+            if (fritesMatch) {
+                const rankMap = { petites: 1, moyennes: 2, grandes: 3 };
+                return { family: 'frites-classiques', rank: rankMap[fritesMatch[1]], exactName: norm };
+            }
+
+            // 2. Boissons avec volume en cl : ex "Coca-Cola (40cl)" ou "Coca-Cola Vanille 33cl"
+            const clMatch = norm.match(/^(.*?)\s*\(?(\d+)\s*cl\)?$/);
+            if (clMatch) {
+                return { family: `drink:${clMatch[1].trim()}`, rank: parseInt(clMatch[2], 10), exactName: norm };
+            }
+
+            // 3. Snacks vendus par quantité : ex "Onion Rings (6)", "King Nuggets (7)", "Chili Cheese (4)"
+            const countMatch = norm.match(/^(.*?)\s*\((\d+)\)$/);
+            if (countMatch) {
+                return { family: `count:${countMatch[1].trim()}`, rank: parseInt(countMatch[2], 10), exactName: norm };
+            }
+
+            // 4. Mini King Sundae -> King Sundae (même parfum)
+            const sundaeMatch = norm.match(/^(mini\s+)?(king sundae\s+.+)$/);
+            if (sundaeMatch) {
+                return { family: `sundae:${sundaeMatch[2].trim()}`, rank: sundaeMatch[1] ? 1 : 2, exactName: norm };
+            }
+
+            // 5. King Fusion -> Extra King Fusion (même parfum)
+            const fusionMatch = norm.match(/^(extra\s+)?(king fusion\s+.+)$/);
+            if (fusionMatch) {
+                return { family: `fusion:${fusionMatch[2].trim()}`, rank: fusionMatch[1] ? 2 : 1, exactName: norm };
+            }
+
+            return { family: `exact:${norm}`, rank: 1, exactName: norm };
+        }
+
+        // Vérifie si menuProd peut satisfaire la demande wantedProd
+        // Retourne null (incompatible), 'exact' (même produit), ou 'upgrade' (taille supérieure)
+        function checkCompatibility(wantedProd, menuProd, allowUpgrades) {
+            if (wantedProd.id === menuProd.id) return 'exact';
+
+            const wProf = wantedProd._profile;
+            const mProf = menuProd._profile;
+
+            // Même nom exact (ex: Cheeseburger PLU 20600 seul vs PLU 20560 en menu King Junior)
+            if (wProf.exactName === mProf.exactName) return 'exact';
+
+            if (allowUpgrades && wProf.family === mProf.family && mProf.rank > wProf.rank) {
+                return 'upgrade';
+            }
+
+            return null;
+        }
+
+        // Chargement initial du catalogue depuis n8n
         async function loadCatalog() {
+            const statusEl = document.getElementById('catalog-status');
             try {
                 const response = await fetch(WEBHOOK_URL);
-                const data = await response.json();
-                const catalogData = Array.isArray(data) ? data[0] : data;
-                globalCatalog = catalogData.catalog;
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const rawData = await response.json();
+                const payload = Array.isArray(rawData) ? rawData[0] : rawData;
 
-                const burgers = globalCatalog.products.filter(p => {
-                    const name = p.name.toLowerCase();
-                    return !name.includes('coca') && !name.includes('fanta') && !name.includes('sprite') && 
-                           !name.includes('frite') && !name.includes('eau') && !name.includes('fuse tea') &&
-                           !name.includes('nuggets') && !name.includes('king fusion') && !name.includes('sundae');
-                });
+                if (!payload || !payload.catalog) {
+                    throw new Error('Réponse JSON invalide depuis n8n');
+                }
 
-                const sides = globalCatalog.products.filter(p => {
-                    const name = p.name.toLowerCase();
-                    return name.includes('frite') || name.includes('king fries') || name.includes('onion') || 
-                           name.includes('nuggets') || name.includes('chili cheese') || name.includes('potatoes');
-                });
+                catalog = payload.catalog;
+                productsById = {};
 
-                const drinks = globalCatalog.products.filter(p => {
-                    const name = p.name.toLowerCase();
-                    return name.includes('coca') || name.includes('fanta') || name.includes('sprite') || 
-                           name.includes('eau') || name.includes('fuse tea') || name.includes('oasis') || 
-                           name.includes('sundae') || name.includes('fusion') || name.includes('glace');
-                });
+                for (const p of catalog.products) {
+                    p._profile = parseProductProfile(p);
+                    p._aloneCents = toCents(p.prices?.alone ?? 0);
+                    productsById[p.id] = p;
+                }
 
-                populateSelect('select-burger', burgers.length > 0 ? burgers : globalCatalog.products);
-                populateSelect('select-side', sides.length > 0 ? sides : globalCatalog.products);
-                populateSelect('select-drink', drinks.length > 0 ? drinks : globalCatalog.products);
+                buyableProducts = catalog.products
+                    .filter(p => p.canBuyAlone && p._aloneCents > 0)
+                    .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
+                populateAllSelects();
+
+                statusEl.textContent = `✅ Catalogue Burger King chargé en direct (${catalog.menus.length} menus officiels, ${buyableProducts.length} produits disponibles)`;
+                statusEl.className = 'text-sm text-emerald-700 font-medium mt-1';
+                document.getElementById('btn-calculate').disabled = false;
             } catch (error) {
-                console.error("Erreur de chargement :", error);
-                alert("Erreur lors de la récupération des données via n8n.");
+                console.error('Erreur chargement n8n :', error);
+                statusEl.textContent = `❌ Impossible de charger le catalogue n8n (${error.message}). Vérifie que le workflow est publié.`;
+                statusEl.className = 'text-sm text-red-600 font-semibold mt-1';
             }
         }
 
-        function populateSelect(elementId, items) {
-            const select = document.getElementById(elementId);
-            items.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.id;
-                option.textContent = `${item.name} ${item.price > 0 ? '(' + item.price.toFixed(2) + ' €)' : ''}`;
-                select.appendChild(option);
-            });
-        }
+        // Répartition propre des 108 produits achetables dans les 4 menus déroulants
+        function getUiBucket(prod) {
+            const cat = prod.category || '';
+            const sub = prod.subCategory || '';
 
-        function addItem(type) {
-            let selectId = type === 'burger' ? 'select-burger' : (type === 'side' ? 'select-side' : 'select-drink');
-            let selectElement = document.getElementById(selectId);
-            let itemId = selectElement.value;
-
-            if (!itemId) return;
-
-            let item = globalCatalog.products.find(p => p.id === itemId);
-            if (item) {
-                userCart.push({ ...item, cartType: type });
-                updateCartDisplay();
+            if (cat === 'Burgers' || cat === 'Tortillas & Wraps' || cat === 'À partager' || sub === 'Petits Burgers') {
+                return 'main';
             }
-            selectElement.value = "";
+            if (cat === 'Salades') {
+                return prod.stepTypes?.includes('SIDE') ? 'side' : 'main';
+            }
+            if (cat === 'Snacks & Sauces') {
+                return sub === 'Sauces' ? 'sweet' : 'side';
+            }
+            if (cat === 'Desserts & Boissons') {
+                const sweetSubs = ['Ice Burger', 'King Sundae', 'King Fusion', 'Extra King Fusion', 'Pâtisseries'];
+                if (sweetSubs.includes(sub) || (prod.stepTypes?.includes('SWEET') && !prod.stepTypes?.includes('DRINK'))) {
+                    return 'sweet';
+                }
+                return 'drink';
+            }
+            return 'main';
         }
 
-        function removeItem(index) {
-            userCart.splice(index, 1);
+        function populateSelectWithGroups(selectId, items) {
+            const select = document.getElementById(selectId);
+            const firstOpt = select.options[0];
+            select.innerHTML = '';
+            select.appendChild(firstOpt);
+
+            const groups = {};
+            for (const item of items) {
+                const groupLabel = (item.subCategory || item.category || 'Autres').trim();
+                if (!groups[groupLabel]) groups[groupLabel] = [];
+                groups[groupLabel].push(item);
+            }
+
+            for (const groupName of Object.keys(groups).sort((a, b) => a.localeCompare(b, 'fr'))) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = groupName;
+                for (const item of groups[groupName]) {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.textContent = `${item.name} — ${formatEuros(item._aloneCents)}`;
+                    optgroup.appendChild(opt);
+                }
+                select.appendChild(optgroup);
+            }
+        }
+
+        function populateAllSelects() {
+            const buckets = { main: [], side: [], drink: [], sweet: [] };
+            for (const p of buyableProducts) {
+                buckets[getUiBucket(p)].push(p);
+            }
+            populateSelectWithGroups('select-main', buckets.main);
+            populateSelectWithGroups('select-side', buckets.side);
+            populateSelectWithGroups('select-drink', buckets.drink);
+            populateSelectWithGroups('select-sweet', buckets.sweet);
+        }
+
+        // Recherche rapide
+        function handleQuickSearch() {
+            const input = document.getElementById('quick-search');
+            const box = document.getElementById('quick-search-results');
+            const q = normalizeText(input.value);
+
+            if (!q || q.length < 2) {
+                box.classList.add('hidden');
+                box.innerHTML = '';
+                return;
+            }
+
+            const matches = buyableProducts.filter(p => normalizeText(p.name).includes(q)).slice(0, 10);
+            if (matches.length === 0) {
+                box.innerHTML = `<div class="p-3 text-xs text-stone-400 italic">Aucun produit trouvé</div>`;
+                box.classList.remove('hidden');
+                return;
+            }
+
+            box.innerHTML = matches.map(p => `
+                <button
+                    type="button"
+                    onclick="addProductById('${p.id}'); document.getElementById('quick-search').value=''; document.getElementById('quick-search-results').classList.add('hidden');"
+                    class="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 flex justify-between items-center border-b last:border-b-0 border-stone-100"
+                >
+                    <span class="font-medium text-stone-800">${escapeHtml(p.name)}</span>
+                    <span class="text-xs font-bold text-orange-600 ml-2 whitespace-nowrap">+ ${formatEuros(p._aloneCents)}</span>
+                </button>
+            `).join('');
+            box.classList.remove('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const box = document.getElementById('quick-search-results');
+            const input = document.getElementById('quick-search');
+            if (box && !box.contains(e.target) && e.target !== input) {
+                box.classList.add('hidden');
+            }
+        });
+
+        function addFromSelect(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select.value) return;
+            addProductById(select.value);
+            select.value = '';
+        }
+
+        function addProductById(prodId) {
+            const existing = cart.find(c => c.id === prodId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ id: prodId, qty: 1 });
+            }
             updateCartDisplay();
+            recalculateIfVisible();
+        }
+
+        function changeQty(prodId, delta) {
+            const idx = cart.findIndex(c => c.id === prodId);
+            if (idx === -1) return;
+            cart[idx].qty += delta;
+            if (cart[idx].qty <= 0) cart.splice(idx, 1);
+            updateCartDisplay();
+            recalculateIfVisible();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartDisplay();
+            document.getElementById('results-container').classList.add('hidden');
+        }
+
+        function recalculateIfVisible() {
+            const resultsEl = document.getElementById('results-container');
+            if (!resultsEl.classList.contains('hidden') && cart.length > 0) {
+                calculateBestCombinations();
+            }
         }
 
         function updateCartDisplay() {
             const cartList = document.getElementById('cart-list');
-            if (userCart.length === 0) {
-                cartList.innerHTML = `<span class="italic text-gray-400">Ton panier est vide... Ajoute tes envies !</span>`;
+            const clearBtn = document.getElementById('btn-clear-cart');
+
+            if (cart.length === 0) {
+                clearBtn.classList.add('hidden');
+                cartList.innerHTML = `<span class="italic text-stone-400">Ton panier est vide... Ajoute ce que tu veux manger ci-dessus !</span>`;
                 return;
             }
 
-            cartList.innerHTML = '';
-            userCart.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.className = "flex justify-between items-center py-1.5 border-b last:border-0";
-                li.innerHTML = `
-                    <span><b>[${item.cartType.toUpperCase()}]</b> ${item.name} — <span class="text-orange-600 font-semibold">${item.price > 0 ? item.price.toFixed(2) + ' €' : 'Prix standard'}</span></span>
-                    <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">❌ Retirer</button>
+            clearBtn.classList.remove('hidden');
+            let totalRetailCents = 0;
+
+            const rowsHtml = cart.map(entry => {
+                const p = productsById[entry.id];
+                const lineCents = p._aloneCents * entry.qty;
+                totalRetailCents += lineCents;
+                return `
+                    <div class="flex flex-wrap justify-between items-center py-2 border-b last:border-b-0 border-stone-200 gap-2">
+                        <div>
+                            <span class="font-semibold text-stone-800">${escapeHtml(p.name)}</span>
+                            <span class="text-xs text-stone-500 ml-1">(${formatEuros(p._aloneCents)} / unité)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeQty('${p.id}', -1)" class="w-7 h-7 rounded-lg bg-stone-200 hover:bg-stone-300 font-bold text-stone-700">−</button>
+                            <span class="w-6 text-center font-bold text-stone-800">${entry.qty}</span>
+                            <button onclick="changeQty('${p.id}', 1)" class="w-7 h-7 rounded-lg bg-stone-200 hover:bg-stone-300 font-bold text-stone-700">+</button>
+                            <span class="w-20 text-right font-bold text-orange-600">${formatEuros(lineCents)}</span>
+                        </div>
+                    </div>
                 `;
-                cartList.appendChild(li);
-            });
+            }).join('');
+
+            cartList.innerHTML = `
+                ${rowsHtml}
+                <div class="flex justify-between items-center pt-3 mt-1 text-stone-700 font-bold">
+                    <span>Total de référence si pris 100 % à l'unité :</span>
+                    <span class="text-stone-900">${formatEuros(totalRetailCents)}</span>
+                </div>
+            `;
         }
 
-        // Moteur d'optimisation combinatoire (Teste toutes les stratégies)
+        // Supplément d'un produit à l'intérieur d'une taille de menu donnée (s, m, l, xl)
+        function getSupplementCents(prod, sizeCode) {
+            if (!prod || !prod.prices) return 0;
+            const key = String(sizeCode || 'm').toLowerCase();
+            return toCents(prod.prices[key] ?? 0);
+        }
+
+        // Choisit la meilleure option pour une étape NON demandée par l'utilisateur (produit bonus obligatoire sur la borne)
+        function getBestBonusOptionForStep(step, sizeCode) {
+            let minSupp = Infinity;
+            const evaluated = [];
+
+            for (const pid of step.productIds) {
+                const prod = productsById[pid];
+                if (!prod) continue;
+                const supp = getSupplementCents(prod, sizeCode);
+                evaluated.push({ prod, supp });
+                if (supp < minSupp) minSupp = supp;
+            }
+
+            const cheapestList = evaluated.filter(e => e.supp === minSupp);
+
+            // Prioriser les glaces / desserts / snacks sympas dans l'affichage des exemples au même prix minimum
+            cheapestList.sort((a, b) => {
+                const score = (p) => {
+                    const n = normalizeText(p.name);
+                    if (n.includes('rien du tout')) return 100;
+                    if (n.includes('sundae') || n.includes('ice') || n.includes('fusion') || n.includes('donut')) return 90;
+                    if (n.includes('burger') || n.includes('nuggets') || n.includes('fries') || n.includes('frites') || n.includes('onion') || n.includes('chili')) return 80;
+                    if (n.includes('coca') || n.includes('fanta') || n.includes('sprite') || n.includes('fuze') || n.includes('oasis')) return 70;
+                    return 50;
+                };
+                return score(b.prod) - score(a.prod);
+            });
+
+            return {
+                chosenProd: cheapestList[0].prod,
+                supplementCents: minSupp,
+                samePriceAlternatives: cheapestList.map(c => c.prod)
+            };
+        }
+
+        // Génère toutes les façons pertinentes d'utiliser les menus du catalogue pour couvrir tout ou partie du panier
+        function buildCandidateActions(cartGroups, allowUpgrades, allowKids) {
+            const T = cartGroups.length;
+            const actions = [];
+
+            // 1. Actions "À l'unité" pour chaque groupe du panier
+            for (let g = 0; g < T; g++) {
+                const prod = cartGroups[g].product;
+                const consume = new Array(T).fill(0);
+                consume[g] = 1;
+                actions.push({
+                    kind: 'ALONE',
+                    costCents: prod._aloneCents,
+                    consume,
+                    signature: `ALONE:${prod.id}`,
+                    product: prod
+                });
+            }
+
+            // 2. Actions "Menu" (chaque taille de chaque menu actif)
+            const menuBucketsByConsume = new Map();
+
+            for (const menu of catalog.menus) {
+                if (!allowKids && menu.kidsMenu) continue;
+
+                for (const sizeObj of menu.sizes) {
+                    const baseCents = toCents(sizeObj.price);
+                    const steps = sizeObj.steps;
+                    const k = steps.length;
+
+                    // Pré-calcul pour chaque étape : option bonus + correspondances possibles avec chaque groupe du panier
+                    const stepChoices = steps.map((step) => {
+                        const bonus = getBestBonusOptionForStep(step, sizeObj.size);
+                        const groupMatches = [];
+
+                        for (let g = 0; g < T; g++) {
+                            const wantedProd = cartGroups[g].product;
+                            let bestMatch = null;
+
+                            for (const pid of step.productIds) {
+                                const mProd = productsById[pid];
+                                if (!mProd) continue;
+                                const matchType = checkCompatibility(wantedProd, mProd, allowUpgrades);
+                                if (!matchType) continue;
+
+                                const supp = getSupplementCents(mProd, sizeObj.size);
+                                // À supplément égal, préférer le produit exact plutôt qu'un surclassement, puis la taille la plus proche
+                                const rankDiff = Math.abs(mProd._profile.rank - wantedProd._profile.rank);
+                                const cand = { groupIdx: g, prod: mProd, supp, matchType, rankDiff };
+
+                                if (
+                                    !bestMatch ||
+                                    cand.supp < bestMatch.supp ||
+                                    (cand.supp === bestMatch.supp && cand.matchType === 'exact' && bestMatch.matchType !== 'exact') ||
+                                    (cand.supp === bestMatch.supp && cand.matchType === bestMatch.matchType && cand.rankDiff < bestMatch.rankDiff)
+                                ) {
+                                    bestMatch = cand;
+                                }
+                            }
+
+                            if (bestMatch) groupMatches.push(bestMatch);
+                        }
+
+                        return { step, bonus, groupMatches };
+                    });
+
+                    // Si aucune étape du menu ne correspond au moindre article du panier, inutile de tester ce menu
+                    if (stepChoices.every(sc => sc.groupMatches.length === 0)) continue;
+
+                    // Énumérer les assignations des étapes (k <= 5 étapes maximum)
+                    const bestForThisMenuSize = new Map();
+                    const curConsume = new Array(T).fill(0);
+                    const curStepsDetail = new Array(k);
+
+                    function dfsSteps(stepIdx, runningSuppCents) {
+                        if (stepIdx === k) {
+                            // Ignorer le cas où le menu ne couvre aucun article du panier
+                            let anyCovered = false;
+                            for (let g = 0; g < T; g++) {
+                                if (curConsume[g] > 0) { anyCovered = true; break; }
+                            }
+                            if (!anyCovered) return;
+
+                            const consumeKey = curConsume.join(',');
+                            const totalCents = baseCents + runningSuppCents;
+                            const prev = bestForThisMenuSize.get(consumeKey);
+
+                            if (!prev || totalCents < prev.costCents) {
+                                bestForThisMenuSize.set(consumeKey, {
+                                    kind: 'MENU',
+                                    menu,
+                                    sizeObj,
+                                    costCents: totalCents,
+                                    baseCents,
+                                    consume: [...curConsume],
+                                    consumeKey,
+                                    signature: `MENU:${menu.id}:${sizeObj.size}:${curStepsDetail.map(s => s.prod.id).join('+')}`,
+                                    stepsDetail: curStepsDetail.map(s => ({ ...s }))
+                                });
+                            }
+                            return;
+                        }
+
+                        const sc = stepChoices[stepIdx];
+
+                        // Branche A : cette étape sert à couvrir un produit demandé dans le panier
+                        for (const m of sc.groupMatches) {
+                            if (curConsume[m.groupIdx] + 1 <= cartGroups[m.groupIdx].qty) {
+                                curConsume[m.groupIdx] += 1;
+                                curStepsDetail[stepIdx] = {
+                                    mode: 'matched',
+                                    stepName: sc.step.name,
+                                    stepType: sc.step.stepType,
+                                    prod: m.prod,
+                                    wantedProd: cartGroups[m.groupIdx].product,
+                                    matchType: m.matchType,
+                                    supplementCents: m.supp
+                                };
+                                dfsSteps(stepIdx + 1, runningSuppCents + m.supp);
+                                curConsume[m.groupIdx] -= 1;
+                            }
+                        }
+
+                        // Branche B : cette étape n'est pas demandée -> devient un produit bonus à choisir sur la borne
+                        curStepsDetail[stepIdx] = {
+                            mode: 'bonus',
+                            stepName: sc.step.name,
+                            stepType: sc.step.stepType,
+                            prod: sc.bonus.chosenProd,
+                            supplementCents: sc.bonus.supplementCents,
+                            alternatives: sc.bonus.samePriceAlternatives
+                        };
+                        dfsSteps(stepIdx + 1, runningSuppCents + sc.bonus.supplementCents);
+                    }
+
+                    dfsSteps(0, 0);
+
+                    for (const candidate of bestForThisMenuSize.values()) {
+                        if (!menuBucketsByConsume.has(candidate.consumeKey)) {
+                            menuBucketsByConsume.set(candidate.consumeKey, []);
+                        }
+                        menuBucketsByConsume.get(candidate.consumeKey).push(candidate);
+                    }
+                }
+            }
+
+            // Conserver les 6 meilleures formules par sous-ensemble couvert (garantit le Top 3 global exact et rapide)
+            for (const list of menuBucketsByConsume.values()) {
+                list.sort((a, b) => a.costCents - b.costCents);
+                for (const item of list.slice(0, 6)) {
+                    actions.push(item);
+                }
+            }
+
+            // Numéroter chaque action pour l'ordre canonique anti-doublons
+            actions.forEach((act, idx) => { act.actionId = idx; });
+            return actions;
+        }
+
+        // File de priorité minimale (Min-Heap) pour l'algorithme de Dijkstra
+        class MinHeap {
+            constructor() { this.data = []; }
+            size() { return this.data.length; }
+            push(item) {
+                this.data.push(item);
+                let i = this.data.length - 1;
+                while (i > 0) {
+                    const p = (i - 1) >> 1;
+                    if (this.data[p].costCents <= this.data[i].costCents) break;
+                    [this.data[p], this.data[i]] = [this.data[i], this.data[p]];
+                    i = p;
+                }
+            }
+            pop() {
+                if (this.data.length === 0) return null;
+                const top = this.data[0];
+                const last = this.data.pop();
+                if (this.data.length > 0) {
+                    this.data[0] = last;
+                    let i = 0;
+                    const n = this.data.length;
+                    while (true) {
+                        let smallest = i;
+                        const l = 2 * i + 1;
+                        const r = 2 * i + 2;
+                        if (l < n && this.data[l].costCents < this.data[smallest].costCents) smallest = l;
+                        if (r < n && this.data[r].costCents < this.data[smallest].costCents) smallest = r;
+                        if (smallest === i) break;
+                        [this.data[i], this.data[smallest]] = [this.data[smallest], this.data[i]];
+                        i = smallest;
+                    }
+                }
+                return top;
+            }
+        }
+
+        // Algorithme de recherche exacte des 3 combinaisons les moins chères (Dijkstra sur états canoniques)
+        function findTop3Combinations(cartGroups, actions) {
+            const T = cartGroups.length;
+            const initialRem = cartGroups.map(cg => cg.qty);
+
+            // Pré-indexer les actions selon le premier groupe du panier qu'elles consomment
+            const actionsByFirstGroup = Array.from({ length: T }, () => []);
+            for (const act of actions) {
+                const firstG = act.consume.findIndex(v => v > 0);
+                if (firstG !== -1) actionsByFirstGroup[firstG].push(act);
+            }
+
+            const heap = new MinHeap();
+            heap.push({
+                costCents: 0,
+                rem: initialRem,
+                minActionId: 0,
+                chosenActions: []
+            });
+
+            const solutions = [];
+            const seenSolutionSignatures = new Set();
+            const visitsPerState = new Map();
+            let expansions = 0;
+            const MAX_EXPANSIONS = 25000;
+
+            while (heap.size() > 0 && solutions.length < 3 && expansions < MAX_EXPANSIONS) {
+                const state = heap.pop();
+                expansions++;
+
+                const firstGroup = state.rem.findIndex(q => q > 0);
+
+                // Panier intégralement couvert !
+                if (firstGroup === -1) {
+                    // Signature canonique de la commande complète pour éviter les doublons
+                    const menuSig = state.chosenActions
+                        .filter(a => a.kind === 'MENU')
+                        .map(a => `${a.menu.id}:${a.sizeObj.size}`)
+                        .sort()
+                        .join('|');
+                    const aloneSig = state.chosenActions
+                        .filter(a => a.kind === 'ALONE')
+                        .map(a => a.product.id)
+                        .sort()
+                        .join('|');
+                    const fullSig = `M[${menuSig}]_A[${aloneSig}]`;
+
+                    if (!seenSolutionSignatures.has(fullSig)) {
+                        seenSolutionSignatures.add(fullSig);
+                        solutions.push(state);
+                    }
+                    continue;
+                }
+
+                const stateKey = `${state.rem.join(',')}|${state.minActionId}`;
+                const countVisits = (visitsPerState.get(stateKey) || 0) + 1;
+                if (countVisits > 6) continue;
+                visitsPerState.set(stateKey, countVisits);
+
+                const candidates = actionsByFirstGroup[firstGroup];
+                for (const act of candidates) {
+                    if (act.actionId < state.minActionId) continue;
+
+                    // Vérifier que l'action ne consomme pas plus que ce qu'il reste à couvrir
+                    let fits = true;
+                    for (let g = firstGroup; g < T; g++) {
+                        if (act.consume[g] > state.rem[g]) {
+                            fits = false;
+                            break;
+                        }
+                    }
+                    if (!fits) continue;
+
+                    const nextRem = new Array(T);
+                    for (let g = 0; g < T; g++) {
+                        nextRem[g] = state.rem[g] - act.consume[g];
+                    }
+
+                    const nextFirstGroup = nextRem.findIndex(q => q > 0);
+                    const nextMinActionId = (nextFirstGroup === firstGroup) ? act.actionId : 0;
+
+                    heap.push({
+                        costCents: state.costCents + act.costCents,
+                        rem: nextRem,
+                        minActionId: nextMinActionId,
+                        chosenActions: [...state.chosenActions, act]
+                    });
+                }
+            }
+
+            return solutions;
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
         function calculateBestCombinations() {
-            if (userCart.length === 0) {
-                alert("Ton panier est vide !");
+            if (!catalog || cart.length === 0) return;
+
+            const allowUpgrades = document.getElementById('opt-upgrades').checked;
+            const allowKids = document.getElementById('opt-kids').checked;
+
+            const cartGroups = cart.map(entry => ({
+                product: productsById[entry.id],
+                qty: entry.qty
+            }));
+
+            const retailCents = cartGroups.reduce((sum, cg) => sum + cg.product._aloneCents * cg.qty, 0);
+            const actions = buildCandidateActions(cartGroups, allowUpgrades, allowKids);
+            const topSolutions = findTop3Combinations(cartGroups, actions);
+
+            const resultsContainer = document.getElementById('results-container');
+            const retailBanner = document.getElementById('retail-banner');
+            const podiumGrid = document.getElementById('podium-grid');
+
+            resultsContainer.classList.remove('hidden');
+
+            if (topSolutions.length === 0) {
+                podiumGrid.innerHTML = `<div class="col-span-3 text-center text-red-600 font-bold">Aucune combinaison trouvée.</div>`;
                 return;
             }
 
-            document.getElementById('results-container').classList.remove('hidden');
+            const bestSavings = retailCents - topSolutions[0].costCents;
+            retailBanner.innerHTML = bestSavings > 0
+                ? `<p class="text-sm md:text-base text-stone-700">
+                     Prix si tu prenais tout séparément à l'unité : <b class="line-through text-stone-500">${formatEuros(retailCents)}</b>
+                     — Avec la combinaison #1, tu paies <b class="text-emerald-700">${formatEuros(topSolutions[0].costCents)}</b>
+                     soit <span class="inline-block bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full ml-1">−${formatEuros(bestSavings)} d'économie réelle</span> !
+                   </p>`
+                : `<p class="text-sm md:text-base text-stone-700">
+                     Prix optimal vérifié : <b class="text-orange-600">${formatEuros(topSolutions[0].costCents)}</b>
+                     <span class="text-stone-500">(aucun menu n'est moins cher que l'achat à l'unité pour cette sélection précise, mais voici les menus les plus proches à côté)</span>.
+                   </p>`;
 
-            // 1. Extraire les types d'articles du panier
-            let burgers = userCart.filter(i => i.cartType === 'burger');
-            let sides = userCart.filter(i => i.cartType === 'side');
-            let drinks = userCart.filter(i => i.cartType === 'drink');
+            // Disposition Podium : sur grand écran [ 2ème (gauche) | 1er au CENTRE | 3ème (droite) ]
+            // Sur mobile : 1er en haut (order-1), 2ème ensuite (order-2), 3ème en bas (order-3)
+            const cardsHtml = [];
 
-            // Prix par défaut réalistes si l'article n'a pas de prix explicite dans le catalogue
-            const getPrice = (item, defaultVal) => (item && item.price > 0) ? item.price : defaultVal;
+            if (topSolutions[1]) {
+                cardsHtml.push(renderSolutionCard(topSolutions[1], 2, retailCents, 'order-2 lg:order-1'));
+            } else {
+                cardsHtml.push(`<div class="hidden lg:block lg:order-1"></div>`);
+            }
 
-            // 2. Stratégie A : Achat 100% au détail pur
-            let costRetail = userCart.reduce((sum, item) => sum + getPrice(item, 3.50), 0);
+            cardsHtml.push(renderSolutionCard(topSolutions[0], 1, retailCents, 'order-1 lg:order-2 lg:-translate-y-3'));
 
-            // 3. Stratégie B : Optimisation "Menu M" (Chaque burger devient un menu M en piochant dans les sides/drinks dispo, ou en rajoutant fictivement si besoin pour casser les prix)
-            let costMenuM = 0;
-            let burgersToProcess = [...burgers];
-            let availableSides = [...sides];
-            let availableDrinks = [...drinks];
+            if (topSolutions[2]) {
+                cardsHtml.push(renderSolutionCard(topSolutions[2], 3, retailCents, 'order-3 lg:order-3'));
+            } else {
+                cardsHtml.push(`<div class="hidden lg:block lg:order-3"></div>`);
+            }
 
-            burgersToProcess.forEach(burger => {
-                let bPrice = getPrice(burger, 7.50);
-                // Un menu M coûte généralement le prix du burger + ~2.50€ pour frites + boisson incluses
-                costMenuM += (bPrice + 2.60); 
-            });
-            // Ajouter ce qui reste hors menu au détail
-            availableSides.forEach(s => costMenuM += getPrice(s, 3.00));
-            availableDrinks.forEach(d => costMenuM += getPrice(d, 2.80));
+            podiumGrid.innerHTML = cardsHtml.join('');
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
-            // S'il n'y a pas de burgers mais des sides/drinks, on force un coût de base
-            if (burgers.length === 0) costMenuM = costRetail;
+        function renderSolutionCard(solution, rank, retailCents, orderClasses) {
+            const menus = solution.chosenActions.filter(a => a.kind === 'MENU');
+            const alones = solution.chosenActions.filter(a => a.kind === 'ALONE');
 
-            // 4. Stratégie C : Stratégie Mixte (Le système force des menus même si l'utilisateur a oublié des frites, car le lot global revient moins cher)
-            let costSmartHack = costMenuM * 0.95; // Simulation de l'effet "Le combo frites+boisson offert ou réduit dans un grand menu"
-
-            // Création du tableau des solutions pour les trier
-            let formulas = [
-                {
-                    title: "Achat 100% au Détail",
-                    price: costRetail,
-                    desc: "Addition de chaque article pris séparément."
-                },
-                {
-                    title: "Pack Menus M Optimisés",
-                    price: costMenuM,
-                    desc: "Regroupement intelligent de vos burgers en formules Menus M."
-                },
-                {
-                    title: "Hack Combo Maxi / Global",
-                    price: costSmartHack,
-                    desc: "Combinaison maximale incluant des optimisations de caisse."
+            // Regrouper les articles à l'unité identiques
+            const aloneGrouped = {};
+            for (const a of alones) {
+                if (!aloneGrouped[a.product.id]) {
+                    aloneGrouped[a.product.id] = { product: a.product, qty: 0 };
                 }
-            ];
+                aloneGrouped[a.product.id].qty += 1;
+            }
+            const aloneList = Object.values(aloneGrouped);
 
-            // Tri du moins cher au plus cher
-            formulas.sort((a, b) => a.price - b.price);
+            // Titre synthétique de la stratégie
+            let title = '';
+            if (menus.length === 0) {
+                title = '100 % À l\'unité (Hors Menu)';
+            } else if (menus.length === 1 && aloneList.length === 0) {
+                title = `Menu ${menus[0].menu.name} (${menus[0].sizeObj.size})`;
+            } else if (menus.length >= 1 && aloneList.length === 0) {
+                title = `${menus.length} Menus combinés`;
+            } else {
+                title = `${menus.length} Menu${menus.length > 1 ? 's' : ''} + ${alones.length} article${alones.length > 1 ? 's' : ''} seul${alones.length > 1 ? 's' : ''}`;
+            }
 
-            const best = formulas[0];
-            const second = formulas[1];
-            const third = formulas[2];
+            // Badge d'écart par rapport au prix au détail
+            const diffCents = retailCents - solution.costCents;
+            let diffBadge = '';
+            if (diffCents > 0) {
+                diffBadge = `<span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-extrabold px-2.5 py-1 rounded-full mt-2">💰 Économie : −${formatEuros(diffCents)} vs unité</span>`;
+            } else if (diffCents === 0) {
+                diffBadge = `<span class="inline-block bg-stone-100 text-stone-600 text-xs font-bold px-2.5 py-1 rounded-full mt-2">Prix identique au détail</span>`;
+            } else {
+                diffBadge = `<span class="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full mt-2">+${formatEuros(-diffCents)} vs unité (avec produits bonus)</span>`;
+            }
 
-            // Rendu visuel du podium
-            const podiumGrid = document.getElementById('podium-grid');
-            podiumGrid.innerHTML = `
-                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-gray-400 text-center">
-                    <span class="text-xs font-bold text-gray-400">2ÈME MEILLEUR PRIX</span>
-                    <h3 class="font-bold text-lg mt-2">${second.title}</h3>
-                    <p class="text-2xl font-extrabold text-gray-700 mt-2">${second.price.toFixed(2)} €</p>
-                    <p class="text-xs text-gray-500 mt-1">${second.desc}</p>
+            // Style selon le rang (1er au centre mis en avant)
+            const rankStyles = {
+                1: {
+                    border: 'border-orange-500 ring-2 ring-orange-400/50 shadow-2xl',
+                    badgeBg: 'bg-orange-600 text-white',
+                    badgeLabel: '🏆 #1 MEILLEUR PRIX',
+                    priceColor: 'text-orange-600 text-4xl'
+                },
+                2: {
+                    border: 'border-stone-400 shadow-md',
+                    badgeBg: 'bg-stone-200 text-stone-700',
+                    badgeLabel: '🥈 2ÈME MEILLEUR PRIX',
+                    priceColor: 'text-stone-800 text-3xl'
+                },
+                3: {
+                    border: 'border-amber-700 shadow-md',
+                    badgeBg: 'bg-amber-100 text-amber-900',
+                    badgeLabel: '🥉 3ÈME MEILLEUR PRIX',
+                    priceColor: 'text-stone-800 text-3xl'
+                }
+            }[rank];
+
+            // Détail étape par étape de chaque Menu à taper sur la borne
+            const menusHtml = menus.map((mAct, mIdx) => {
+                const kioskPath = (mAct.menu.paths && mAct.menu.paths[0]) ? mAct.menu.paths[0] : 'Menus';
+
+                const stepsHtml = mAct.stepsDetail.map((st, sIdx) => {
+                    const suppStr = st.supplementCents > 0
+                        ? ` <span class="text-xs font-bold text-orange-700">(+${formatEuros(st.supplementCents)})</span>`
+                        : (st.supplementCents < 0 ? ` <span class="text-xs font-bold text-emerald-700">(${formatEuros(st.supplementCents)})</span>` : '');
+
+                    if (st.mode === 'matched') {
+                        const upgradeNote = st.matchType === 'upgrade'
+                            ? `<div class="text-xs text-sky-700 font-medium mt-0.5">⬆️ Taille supérieure incluse (remplace ${escapeHtml(st.wantedProd.name)})</div>`
+                            : '';
+                        return `
+                            <li class="py-1.5 border-b last:border-b-0 border-stone-200/70">
+                                <div class="text-xs text-stone-500">${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
+                                <div class="font-semibold text-stone-800">✓ ${escapeHtml(st.prod.name)}${suppStr}</div>
+                                ${upgradeNote}
+                            </li>
+                        `;
+                    }
+
+                    // Étape non demandée (bonus ou réduction "Rien du tout")
+                    const isNoToyDiscount = normalizeText(st.prod.name).includes('rien du tout');
+                    if (isNoToyDiscount) {
+                        return `
+                            <li class="my-1.5 p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                                <div class="text-xs font-bold text-emerald-800">💡 ASTUCE BORNE — ${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
+                                <div class="text-xs text-emerald-900 mt-0.5">
+                                    Sélectionne <b>« ${escapeHtml(st.prod.name)} »</b> pour économiser <b>${formatEuros(-st.supplementCents)}</b>
+                                    <span class="text-emerald-700">(ou prends un jouet pour +0,30 €)</span>.
+                                </div>
+                            </li>
+                        `;
+                    }
+
+                    const otherChoices = (st.alternatives || [])
+                        .slice(0, 4)
+                        .map(p => p.name)
+                        .join(', ');
+
+                    return `
+                        <li class="my-1.5 p-2.5 rounded-lg bg-amber-50 border border-amber-300">
+                            <div class="text-xs font-extrabold text-amber-900">
+                                🎁 PRODUIT BONUS À CHOISIR (${sIdx + 1}. ${escapeHtml(st.stepName)})
+                            </div>
+                            <div class="text-xs text-amber-900 mt-0.5">
+                                Tu ne l'as pas demandé, mais ce menu reste plus avantageux ! Il faudra choisir sur la borne :
+                                <b>${escapeHtml(otherChoices || st.prod.name)}</b>${suppStr || ' (inclus à +0,00 €)'}.
+                            </div>
+                        </li>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="bg-stone-50 rounded-xl p-3.5 border border-stone-200 text-left mb-3">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wide text-orange-600">Menu #${mIdx + 1} · Taille ${escapeHtml(mAct.sizeObj.size)}</span>
+                                <h4 class="font-extrabold text-stone-900 text-sm">${escapeHtml(mAct.menu.name)}</h4>
+                            </div>
+                            <span class="font-extrabold text-sm text-stone-800 whitespace-nowrap">${formatEuros(mAct.costCents)}</span>
+                        </div>
+                        <div class="text-xs text-stone-500 mt-1 mb-2">
+                            📍 Borne : <b class="text-stone-700">${escapeHtml(kioskPath)}</b>
+                        </div>
+                        <ul class="text-sm">${stepsHtml}</ul>
+                    </div>
+                `;
+            }).join('');
+
+            // Détail des articles restants pris à l'unité
+            const alonesHtml = aloneList.length > 0 ? `
+                <div class="bg-stone-50 rounded-xl p-3.5 border border-stone-200 text-left">
+                    <div class="text-xs font-bold uppercase tracking-wide text-stone-500 mb-1.5">
+                        ➕ À ajouter à l'unité sur la borne
+                    </div>
+                    <ul class="text-sm space-y-1.5">
+                        ${aloneList.map(item => {
+                            const path = (item.product.paths && item.product.paths[0]) ? item.product.paths[0] : item.product.category;
+                            return `
+                                <li class="flex justify-between items-start gap-2 border-b last:border-b-0 border-stone-200/70 pb-1 last:pb-0">
+                                    <div>
+                                        <span class="font-semibold text-stone-800">${item.qty}× ${escapeHtml(item.product.name)}</span>
+                                        <div class="text-xs text-stone-500">📍 ${escapeHtml(path)}</div>
+                                    </div>
+                                    <span class="font-bold text-stone-700 whitespace-nowrap">${formatEuros(item.product._aloneCents * item.qty)}</span>
+                                </li>
+                            `;
+                        }).join('')}
+                    </ul>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-2xl border-t-4 border-orange-500 transform md:-translate-y-4 text-center">
-                    <span class="text-xs font-bold text-orange-500 tracking-wider">🏆 MEILLEUR PRIX</span>
-                    <h3 class="font-bold text-xl mt-2">${best.title}</h3>
-                    <p class="text-3xl font-extrabold text-orange-600 mt-2">${best.price.toFixed(2)} €</p>
-                    <p class="text-xs text-gray-500 mt-1">${best.desc}</p>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-amber-600 text-center">
-                    <span class="text-xs font-bold text-amber-600">3ÈME MEILLEUR PRIX</span>
-                    <h3 class="font-bold text-lg mt-2">${third.title}</h3>
-                    <p class="text-2xl font-extrabold text-gray-700 mt-2">${third.price.toFixed(2)} €</p>
-                    <p class="text-xs text-gray-500 mt-1">${third.desc}</p>
+            ` : '';
+
+            return `
+                <div class="bg-white rounded-2xl p-5 border-t-8 ${rankStyles.border} flex flex-col justify-between ${orderClasses}">
+                    <div>
+                        <div class="text-center mb-4">
+                            <span class="inline-block text-xs font-extrabold px-3 py-1 rounded-full tracking-wider ${rankStyles.badgeBg}">
+                                ${rankStyles.badgeLabel}
+                            </span>
+                            <h3 class="font-extrabold text-lg text-stone-800 mt-3">${escapeHtml(title)}</h3>
+                            <p class="${rankStyles.priceColor} font-black mt-1">${formatEuros(solution.costCents)}</p>
+                            ${diffBadge}
+                        </div>
+                        <div class="border-t border-stone-200 pt-3">
+                            <p class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
+                                Marche à suivre sur la borne :
+                            </p>
+                            ${menusHtml}
+                            ${alonesHtml}
+                        </div>
+                    </div>
                 </div>
             `;
         }
