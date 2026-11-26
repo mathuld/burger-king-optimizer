@@ -48,10 +48,9 @@
         }
     </style>
     <script>
-        // Appliquer le thème immédiatement pour éviter tout flash blanc au chargement
         (function () {
             const savedTheme = localStorage.getItem('bk_optimizer_theme');
-            const isDark = savedTheme ? savedTheme === 'dark' : true; // Sombre par défaut
+            const isDark = savedTheme ? savedTheme === 'dark' : true;
             document.documentElement.classList.toggle('dark', isDark);
         })();
     </script>
@@ -236,8 +235,8 @@
                 </div>
             </div>
 
-            <!-- Options d'optimisation -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-stone-50 dark:bg-neutral-950/60 border border-stone-200 dark:border-neutral-800 rounded-xl p-3.5 mb-6 text-xs sm:text-sm text-stone-700 dark:text-neutral-300">
+            <!-- Options d'optimisation (grille 2x2) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-stone-50 dark:bg-neutral-950/60 border border-stone-200 dark:border-neutral-800 rounded-xl p-3.5 mb-6 text-xs sm:text-sm text-stone-700 dark:text-neutral-300">
                 <label class="flex items-start gap-2 cursor-pointer select-none">
                     <input type="checkbox" id="opt-upgrades" checked onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-600 dark:accent-orange-500 rounded shrink-0">
                     <span><b class="text-stone-900 dark:text-neutral-100">Autoriser la taille supérieure</b> si plus grand revient moins cher</span>
@@ -249,6 +248,10 @@
                 <label class="flex items-start gap-2 cursor-pointer select-none">
                     <input type="checkbox" id="opt-multi-crowns" onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-amber-600 dark:accent-amber-500 rounded shrink-0">
                     <span><b class="text-stone-900 dark:text-neutral-100">Cumuler plusieurs offres Kingdom</b> <span class="text-stone-500">(plusieurs tickets séparés sur la borne)</span></span>
+                </label>
+                <label class="flex items-start gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="opt-no-bonus" onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-600 dark:accent-orange-500 rounded shrink-0">
+                    <span><b class="text-stone-900 dark:text-neutral-100">Uniquement les produits demandés</b> <span class="text-stone-500">(rien en plus, même si c'est moins cher)</span></span>
                 </label>
             </div>
 
@@ -324,7 +327,6 @@
             updateThemeSwitchUI();
         }
 
-        // Barème Kingdom de secours (si l'appel ?mode=kingdom échoue)
         const FALLBACK_KINGDOM_LEVELS = [
             { minPoints: 40, title: 'Petits Plaisirs', offers: [
                 { title: 'Onion Rings (6)', type: 'PRODUCT', points: 40 },
@@ -1319,7 +1321,7 @@
             };
         }
 
-        function buildCandidateActions(cartGroups, allowUpgrades, allowKids, availableCrowns) {
+        function buildCandidateActions(cartGroups, allowUpgrades, allowKids, availableCrowns, noBonusItems) {
             const T = cartGroups.length;
             const actions = [];
 
@@ -1437,6 +1439,15 @@
 
                     if (stepChoices.every(sc => sc.groupMatches.length === 0)) continue;
 
+                    // Si "Uniquement les produits demandés" est coché : toute étape obligatoire sans correspondance
+                    // dans le panier (hors choix "Rien du tout") rend ce menu inéligible
+                    if (noBonusItems) {
+                        const hasForcedExtraStep = stepChoices.some(sc =>
+                            sc.groupMatches.length === 0 && !normalizeText(sc.bonus.chosenProd.name).includes('rien du tout')
+                        );
+                        if (hasForcedExtraStep) continue;
+                    }
+
                     const bestForThisMenuSize = new Map();
                     const curConsume = new Array(T).fill(0);
                     const curStepsDetail = new Array(k);
@@ -1492,15 +1503,20 @@
                             }
                         }
 
-                        curStepsDetail[stepIdx] = {
-                            mode: 'bonus',
-                            stepName: sc.step.name,
-                            stepType: sc.step.stepType,
-                            prod: sc.bonus.chosenProd,
-                            supplementCents: sc.bonus.supplementCents,
-                            alternatives: sc.bonus.samePriceAlternatives
-                        };
-                        dfsSteps(stepIdx + 1, runningSuppCents + sc.bonus.supplementCents);
+                        // Autoriser une étape non demandée uniquement si les bonus sont permis,
+                        // ou s'il s'agit de l'option "Rien du tout" (0 produit en plus)
+                        const isNothingOption = normalizeText(sc.bonus.chosenProd.name).includes('rien du tout');
+                        if (!noBonusItems || isNothingOption) {
+                            curStepsDetail[stepIdx] = {
+                                mode: 'bonus',
+                                stepName: sc.step.name,
+                                stepType: sc.step.stepType,
+                                prod: sc.bonus.chosenProd,
+                                supplementCents: sc.bonus.supplementCents,
+                                alternatives: sc.bonus.samePriceAlternatives
+                            };
+                            dfsSteps(stepIdx + 1, runningSuppCents + sc.bonus.supplementCents);
+                        }
                     }
 
                     dfsSteps(0, 0);
@@ -1717,6 +1733,7 @@
             const allowUpgrades = document.getElementById('opt-upgrades').checked;
             const allowKids = document.getElementById('opt-kids').checked;
             const allowMultiCrowns = document.getElementById('opt-multi-crowns').checked;
+            const noBonusItems = document.getElementById('opt-no-bonus').checked;
             const maxKingdomRewards = userCrowns >= 40 ? (allowMultiCrowns ? 99 : 1) : 0;
 
             const cartGroups = cart.map(entry => {
@@ -1729,7 +1746,7 @@
             });
 
             const retailCents = cartGroups.reduce((sum, cg) => sum + cg.unitAloneCents * cg.qty, 0);
-            const actions = buildCandidateActions(cartGroups, allowUpgrades, allowKids, userCrowns);
+            const actions = buildCandidateActions(cartGroups, allowUpgrades, allowKids, userCrowns, noBonusItems);
             const topSolutions = findTop3Combinations(cartGroups, actions, userCrowns, maxKingdomRewards);
 
             const resultsContainer = document.getElementById('results-container');
