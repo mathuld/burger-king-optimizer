@@ -18,32 +18,31 @@
             </p>
         </header>
 
-        <!-- Section 0 : Choix du Restaurant -->
-        <div class="bg-white p-5 rounded-2xl shadow-md border border-stone-200 mb-6">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <!-- Restaurant actif -->
+        <!-- Barre supérieure : Restaurant + Couronnes Kingdom -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+            <!-- Bloc Restaurant (7 colonnes) -->
+            <div class="lg:col-span-7 bg-white p-5 rounded-2xl shadow-md border border-stone-200 flex flex-col justify-between gap-3">
                 <div class="flex items-start gap-3">
                     <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl shrink-0">
                         📍
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <div class="text-xs font-bold uppercase tracking-wider text-stone-400">Restaurant sélectionné</div>
-                        <div class="font-extrabold text-stone-900 text-base md:text-lg" id="current-store-name">
+                        <div class="font-extrabold text-stone-900 text-base truncate" id="current-store-name">
                             Chargement du restaurant...
                         </div>
-                        <div class="text-xs text-stone-500" id="current-store-address"></div>
+                        <div class="text-xs text-stone-500 truncate" id="current-store-address"></div>
                     </div>
                 </div>
 
-                <!-- Recherche de restaurant + Géolocalisation -->
-                <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                    <div class="relative w-full sm:w-80">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-1">
                         <input
                             type="text"
                             id="store-search"
                             oninput="handleStoreSearch()"
                             onfocus="handleStoreSearch()"
-                            placeholder="🔎 Ville, code postal, nom (ex: Valence, 69002...)"
+                            placeholder="🔎 Changer de BK (ville, code postal, nom...)"
                             class="w-full px-3 py-2 text-sm border border-stone-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
                         />
                         <div id="store-search-results" class="hidden absolute z-30 mt-1 w-full bg-white border border-stone-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto"></div>
@@ -58,13 +57,56 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Bloc Couronnes Kingdom (5 colonnes) -->
+            <div class="lg:col-span-5 bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl shadow-md border border-amber-200 flex flex-col justify-between gap-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-xl bg-amber-400/30 text-amber-800 flex items-center justify-center text-xl shrink-0">
+                            👑
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold uppercase tracking-wider text-amber-800">Programme Kingdom</div>
+                            <div class="font-extrabold text-stone-900 text-base">Mes Couronnes disponibles</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input
+                            type="number"
+                            id="input-crowns"
+                            min="0"
+                            max="5000"
+                            step="5"
+                            value="0"
+                            oninput="handleCrownsChange(this.value)"
+                            class="w-24 px-3 py-1.5 text-right font-black text-lg text-amber-900 bg-white border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                        />
+                        <span class="text-lg">👑</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex flex-wrap gap-1.5 mb-2">
+                        <button type="button" onclick="setCrowns(0)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-stone-600">0</button>
+                        <button type="button" onclick="setCrowns(40)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-amber-900">40</button>
+                        <button type="button" onclick="setCrowns(80)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-amber-900">80</button>
+                        <button type="button" onclick="setCrowns(120)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-amber-900">120</button>
+                        <button type="button" onclick="setCrowns(135)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-amber-900">135</button>
+                        <button type="button" onclick="setCrowns(150)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-amber-900">150</button>
+                        <button type="button" onclick="setCrowns(200)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-amber-900">200</button>
+                        <button type="button" onclick="setCrowns(240)" class="px-2 py-0.5 text-xs font-bold rounded-md bg-white border border-amber-200 hover:bg-amber-100 text-amber-900">240+</button>
+                    </div>
+                    <p class="text-xs text-amber-900 font-medium" id="crowns-tier-info">
+                        Entre ton solde de couronnes pour inclure les produits et menus offerts.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- Section 1 : Sélection des envies -->
         <div class="bg-white p-6 rounded-2xl shadow-md border border-stone-200 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
                 <h2 class="text-xl font-bold text-stone-800">1. Sélectionne ce que tu veux manger</h2>
-                <!-- Barre de recherche rapide produits -->
                 <div class="relative w-full md:w-80">
                     <input
                         type="text"
@@ -129,14 +171,18 @@
             </div>
 
             <!-- Options d'optimisation -->
-            <div class="flex flex-col sm:flex-row gap-4 bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 mb-6 text-sm">
-                <label class="flex items-center gap-2 cursor-pointer select-none">
-                    <input type="checkbox" id="opt-upgrades" checked onchange="recalculateIfVisible()" class="w-4 h-4 accent-orange-600 rounded">
-                    <span><b>Autoriser la taille supérieure</b> si j'ai choisi une taille précise mais que plus grand coûte moins cher</span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-stone-50 border border-stone-200 rounded-xl p-3.5 mb-6 text-xs sm:text-sm">
+                <label class="flex items-start gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="opt-upgrades" checked onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-600 rounded shrink-0">
+                    <span><b>Autoriser la taille supérieure</b> si plus grand revient moins cher</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer select-none">
-                    <input type="checkbox" id="opt-kids" checked onchange="recalculateIfVisible()" class="w-4 h-4 accent-orange-600 rounded">
-                    <span><b>Inclure les Menus Enfants</b> <span class="text-stone-500">(King Junior / King JR+)</span></span>
+                <label class="flex items-start gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="opt-kids" checked onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-orange-600 rounded shrink-0">
+                    <span><b>Inclure les Menus Enfants</b> (King Junior / King JR+)</span>
+                </label>
+                <label class="flex items-start gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="opt-multi-crowns" onchange="recalculateIfVisible()" class="w-4 h-4 mt-0.5 accent-amber-600 rounded shrink-0">
+                    <span><b>Cumuler plusieurs offres Kingdom</b> <span class="text-stone-500">(nécessite de faire plusieurs tickets séparés sur la borne)</span></span>
                 </label>
             </div>
 
@@ -176,16 +222,112 @@
     <script>
         const WEBHOOK_URL = 'https://n8n.mvincent.xyz/webhook/burger-king-prices';
         const STORAGE_STORE_KEY = 'bk_optimizer_selected_store';
+        const STORAGE_CROWNS_KEY = 'bk_optimizer_crowns';
         const DEFAULT_STORE_ID = 'K1376';
 
+        // Barème Kingdom de secours (utilisé uniquement si l'appel ?mode=kingdom échoue)
+        const FALLBACK_KINGDOM_LEVELS = [
+            { minPoints: 40, title: 'Petits Plaisirs', offers: [
+                { title: 'Onion Rings (6)', type: 'PRODUCT', points: 40 },
+                { title: 'Mini King Sundae', type: 'PRODUCT', points: 40 },
+                { title: 'Chili Cheese (4)', type: 'PRODUCT', points: 40 },
+                { title: 'Sauce XXL au choix', type: 'PRODUCT', points: 40 },
+                { title: 'Hamburger', type: 'PRODUCT', points: 40 },
+                { title: 'King Nuggets® (4)', type: 'PRODUCT', points: 40 },
+                { title: 'Petites Boissons Fraîches', type: 'PRODUCT', points: 40 },
+                { title: 'Moyennes frites', type: 'PRODUCT', points: 40 },
+                { title: 'Cheeseburger', type: 'PRODUCT', points: 40 },
+                { title: 'Boissons chaudes', type: 'PRODUCT', points: 40 }
+            ]},
+            { minPoints: 80, title: 'Snacks & Desserts', offers: [
+                { title: 'Ice Burger de Noël', type: 'PRODUCT', points: 80 },
+                { title: 'Coca-Cola Zéro Sucres Creamy Vanilla 33CL', type: 'PRODUCT', points: 80 },
+                { title: 'Ice Burger au Nutella®', type: 'PRODUCT', points: 80 },
+                { title: 'Boissons Chaudes Gourmandes', type: 'PRODUCT', points: 80 },
+                { title: 'Chili Cheese (6)', type: 'PRODUCT', points: 80 },
+                { title: 'King Fusion™', type: 'PRODUCT', points: 80 },
+                { title: 'Grandes Boissons Fraîches', type: 'PRODUCT', points: 80 },
+                { title: 'Pâtisseries', type: 'PRODUCT', points: 80 },
+                { title: 'King Fries', type: 'PRODUCT', points: 80 },
+                { title: 'Onion Rings (9)', type: 'PRODUCT', points: 80 },
+                { title: 'King Nuggets® (7)', type: 'PRODUCT', points: 80 },
+                { title: 'Grandes Frites', type: 'PRODUCT', points: 80 },
+                { title: 'King Sundae', type: 'PRODUCT', points: 80 }
+            ]},
+            { minPoints: 120, title: 'Burgers classiques', offers: [
+                { title: 'Wrap Chicken Louisiane', type: 'PRODUCT', points: 120 },
+                { title: 'Wrap Veggie Chicken Louisiane', type: 'PRODUCT', points: 120 },
+                { title: 'Smoky Chicken', type: 'PRODUCT', points: 120 },
+                { title: 'Big Fish', type: 'PRODUCT', points: 120 },
+                { title: 'King Fish', type: 'PRODUCT', points: 120 },
+                { title: 'King Bacon', type: 'PRODUCT', points: 120 },
+                { title: 'King Chicken Bacon', type: 'PRODUCT', points: 120 }
+            ]},
+            { minPoints: 135, title: 'Burgers premium', offers: [
+                { title: 'Tortilla Cheese & Bacon', type: 'PRODUCT', points: 135 },
+                { title: 'Tortilla Veggie Cheese & Bacon', type: 'PRODUCT', points: 135 },
+                { title: 'CBK', type: 'PRODUCT', points: 135 },
+                { title: 'Big King®', type: 'PRODUCT', points: 135 },
+                { title: 'Whopper®', type: 'PRODUCT', points: 135 },
+                { title: 'Veggie Chicken Louisiane Steakhouse', type: 'PRODUCT', points: 135 },
+                { title: 'Chicken Louisiane Steakhouse', type: 'PRODUCT', points: 135 },
+                { title: 'Menu King Junior', type: 'MENU', points: 135 },
+                { title: 'Steakhouse', type: 'PRODUCT', points: 135 },
+                { title: 'Veggie Whopper®', type: 'PRODUCT', points: 135 },
+                { title: 'Veggie Steakhouse', type: 'PRODUCT', points: 135 }
+            ]},
+            { minPoints: 150, title: 'Menus classiques', offers: [
+                { title: 'Menu Smoky Chicken', type: 'MENU', points: 150 },
+                { title: 'Menu King Nuggets x7', type: 'MENU', points: 150 },
+                { title: 'Menu Big Fish', type: 'MENU', points: 150 },
+                { title: 'Menu Wrap Chicken Louisiane', type: 'MENU', points: 150 },
+                { title: 'Menu Wrap Veggie Chicken Louisiane', type: 'MENU', points: 150 },
+                { title: 'Menu Big King®', type: 'MENU', points: 150 },
+                { title: 'Menu King Junior +', type: 'MENU', points: 150 },
+                { title: 'Menu Whopper®', type: 'MENU', points: 150 },
+                { title: 'Menu Veggie Whopper®', type: 'MENU', points: 150 }
+            ]},
+            { minPoints: 200, title: 'Menus premium', offers: [
+                { title: 'Menu Tortilla Cheese & Bacon', type: 'MENU', points: 200 },
+                { title: 'Menu Tortilla Veggie Cheese & Bacon', type: 'MENU', points: 200 },
+                { title: 'Menu CBK', type: 'MENU', points: 200 },
+                { title: 'Menu Veggie Chicken Louisiane', type: 'MENU', points: 200 },
+                { title: 'Kingbox', type: 'PRODUCT', points: 200 },
+                { title: 'Menu Chicken Louisiane Steakhouse', type: 'MENU', points: 200 },
+                { title: 'Menu King Nuggets x10', type: 'MENU', points: 200 },
+                { title: 'Menu Steakhouse', type: 'MENU', points: 200 },
+                { title: 'Menu Caesar Chicken Bowl', type: 'MENU', points: 200 },
+                { title: 'Menu Veggie Caesar Chicken Bowl', type: 'MENU', points: 200 },
+                { title: 'Menu Veggie Steakhouse', type: 'MENU', points: 200 }
+            ]},
+            { minPoints: 240, title: 'Festin du King', offers: [
+                { title: 'Menu King Size Master Brie', type: 'MENU', points: 240 },
+                { title: 'Menu King Size Master Poulet Brie Bacon', type: 'MENU', points: 240 },
+                { title: 'Menu King Size Master Poulet Raclette Fumée', type: 'MENU', points: 240 },
+                { title: 'Menu King Size Master Raclette Fumée', type: 'MENU', points: 240 },
+                { title: 'Menu King Size Double CBK', type: 'MENU', points: 240 },
+                { title: 'Menu King Size Krispper Tenders® x5', type: 'MENU', points: 240 },
+                { title: 'Menu King Size Double Whopper® Cheese', type: 'MENU', points: 240 },
+                { title: 'Menu King Size Big King XXL', type: 'MENU', points: 240 }
+            ]}
+        ];
+
         let allRestaurants = [];
+        let kingdomLevels = FALLBACK_KINGDOM_LEVELS;
         let currentStoreId = localStorage.getItem(STORAGE_STORE_KEY) || DEFAULT_STORE_ID;
+        let userCrowns = Math.max(0, parseInt(localStorage.getItem(STORAGE_CROWNS_KEY) || '0', 10) || 0);
 
         let catalog = null;
         let productsById = {};
         let buyableProducts = [];
         let multiSizeFamilies = {};
         let multiSizeFamiliesList = [];
+        // Récompenses Kingdom reliées au catalogue actif :
+        // productRewardsById[prodId] = { points, offerTitle }
+        // menuRewardsByKey[`${menuId}:${sizeCode}`] = { points, offerTitle }
+        let productRewardsById = {};
+        let menuRewardsByKey = {};
+
         let cart = [];
 
         function toCents(euros) {
@@ -206,12 +348,22 @@
                 .trim();
         }
 
+        // Clé de comparaison souple pour relier les titres Kingdom aux noms du catalogue (ex: "x7" == "(7)", "junior" == "jr")
+        function normalizeComparableName(str) {
+            return normalizeText(str)
+                .replace(/\bjunior\b/g, 'jr')
+                .replace(/\bx\s*(\d+)\b/g, '$1')
+                .replace(/\((\d+)\)/g, '$1')
+                .replace(/[^a-z0-9+ ]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
         function capitalizeFirst(str) {
             const s = (str || '').trim();
             return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
         }
 
-        // Distance à vol d'oiseau en km (formule de Haversine)
         function haversineKm(lat1, lng1, lat2, lng2) {
             const toRad = d => (d * Math.PI) / 180;
             const R = 6371;
@@ -220,6 +372,210 @@
             const a = Math.sin(dLat / 2) ** 2 +
                       Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
             return 2 * R * Math.asin(Math.sqrt(a));
+        }
+
+        // =========================================================
+        // GESTION DES COURONNES KINGDOM
+        // =========================================================
+        async function loadKingdomLevels() {
+            try {
+                const res = await fetch(`${WEBHOOK_URL}?mode=kingdom`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const raw = await res.json();
+                const payload = Array.isArray(raw) ? raw[0] : raw;
+                if (payload && Array.isArray(payload.levels) && payload.levels.length > 0) {
+                    kingdomLevels = payload.levels;
+                }
+            } catch (err) {
+                console.warn('Utilisation du barème Kingdom intégré (mode=kingdom non disponible) :', err);
+            }
+            bindKingdomRewardsToCatalog();
+            updateCrownsUI();
+        }
+
+        function setCrowns(val) {
+            document.getElementById('input-crowns').value = val;
+            handleCrownsChange(val);
+        }
+
+        function handleCrownsChange(rawVal) {
+            userCrowns = Math.max(0, parseInt(rawVal || '0', 10) || 0);
+            localStorage.setItem(STORAGE_CROWNS_KEY, String(userCrowns));
+            updateCrownsUI();
+            recalculateIfVisible();
+        }
+
+        function updateCrownsUI() {
+            const infoEl = document.getElementById('crowns-tier-info');
+            if (!userCrowns || userCrowns < 40) {
+                infoEl.innerHTML = userCrowns === 0
+                    ? `Entre ton solde de couronnes pour débloquer les récompenses gratuites.`
+                    : `Il te manque <b>${40 - userCrowns} 👑</b> pour atteindre le 1er palier (40 👑).`;
+                return;
+            }
+
+            const unlocked = kingdomLevels.filter(l => userCrowns >= l.minPoints);
+            const highest = unlocked[unlocked.length - 1];
+            const totalOffers = unlocked.reduce((sum, l) => sum + (l.offers?.length || 0), 0);
+            infoEl.innerHTML = `✅ Palier <b>« ${escapeHtml(highest.title)} » (${highest.minPoints} 👑)</b> débloqué — <b>${totalOffers} récompenses</b> testées automatiquement !`;
+        }
+
+        // Relie chaque offre Kingdom aux vrais produits et menus du restaurant sélectionné
+        function bindKingdomRewardsToCatalog() {
+            productRewardsById = {};
+            menuRewardsByKey = {};
+            if (!catalog) return;
+
+            const registerProdReward = (prodId, points, offerTitle) => {
+                const prev = productRewardsById[prodId];
+                if (!prev || points < prev.points) {
+                    productRewardsById[prodId] = { points, offerTitle };
+                }
+            };
+
+            const registerMenuReward = (menuId, sizeCode, points, offerTitle) => {
+                const key = `${menuId}:${sizeCode}`;
+                const prev = menuRewardsByKey[key];
+                if (!prev || points < prev.points) {
+                    menuRewardsByKey[key] = { points, offerTitle };
+                }
+            };
+
+            for (const level of kingdomLevels) {
+                for (const offer of (level.offers || [])) {
+                    const pts = Number(offer.points || level.minPoints) || 0;
+                    if (pts <= 0) continue;
+
+                    const normTitle = normalizeText(offer.title);
+                    const compTitle = normalizeComparableName(offer.title);
+
+                    if (offer.type === 'PRODUCT') {
+                        // 1. Offres génériques couvrant une famille entière de produits
+                        if (normTitle === 'mini king sundae') {
+                            catalog.products.forEach(p => {
+                                if (normalizeText(p.name).startsWith('mini king sundae')) registerProdReward(p.id, pts, offer.title);
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'king sundae') {
+                            catalog.products.forEach(p => {
+                                if (normalizeText(p.name).startsWith('king sundae')) registerProdReward(p.id, pts, offer.title);
+                            });
+                            continue;
+                        }
+                        if (normTitle.includes('king fusion')) {
+                            catalog.products.forEach(p => {
+                                if (p.subCategory === 'King Fusion' && !normalizeText(p.name).startsWith('extra')) {
+                                    registerProdReward(p.id, pts, offer.title);
+                                }
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'patisseries') {
+                            catalog.products.forEach(p => {
+                                if (p.subCategory === 'Pâtisseries') registerProdReward(p.id, pts, offer.title);
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'king fries') {
+                            catalog.products.forEach(p => {
+                                if (p.subCategory === 'King Fries') registerProdReward(p.id, pts, offer.title);
+                            });
+                            continue;
+                        }
+                        if (normTitle.includes('sauce xxl')) {
+                            catalog.products.forEach(p => {
+                                if (p.subCategory === 'Sauces' && normalizeText(p.name).includes('xxl')) {
+                                    registerProdReward(p.id, pts, offer.title);
+                                }
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'kingbox') {
+                            catalog.products.forEach(p => {
+                                if (p.subCategory === 'Kingbox') registerProdReward(p.id, pts, offer.title);
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'petites boissons fraiches') {
+                            catalog.products.forEach(p => {
+                                const n = normalizeText(p.name);
+                                const isSmallCl = /\b(20|25|33)\s*cl\b/.test(n);
+                                const isSpecial80 = n.includes('red bull') || n.includes('vanille');
+                                if (p.category === 'Desserts & Boissons' && isSmallCl && !isSpecial80) {
+                                    registerProdReward(p.id, pts, offer.title);
+                                }
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'grandes boissons fraiches') {
+                            catalog.products.forEach(p => {
+                                const n = normalizeText(p.name);
+                                if (p.category === 'Desserts & Boissons' && /\b(40|50)\s*cl\b/.test(n)) {
+                                    registerProdReward(p.id, pts, offer.title);
+                                }
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'boissons chaudes') {
+                            catalog.products.forEach(p => {
+                                const n = normalizeText(p.name);
+                                if ((p.subCategory === 'Cafés' || p.subCategory === 'Thés') && !n.includes('gourmand')) {
+                                    registerProdReward(p.id, pts, offer.title);
+                                }
+                            });
+                            continue;
+                        }
+                        if (normTitle === 'boissons chaudes gourmandes') {
+                            catalog.products.forEach(p => {
+                                const n = normalizeText(p.name);
+                                if ((p.subCategory === 'Cafés' || p.subCategory === 'Thés') && n.includes('gourmand')) {
+                                    registerProdReward(p.id, pts, offer.title);
+                                }
+                            });
+                            continue;
+                        }
+                        if (normTitle.includes('creamy vanilla')) {
+                            catalog.products.forEach(p => {
+                                const n = normalizeText(p.name);
+                                if (n.includes('coca') && n.includes('vanille')) registerProdReward(p.id, pts, offer.title);
+                            });
+                            continue;
+                        }
+
+                        // 2. Produits précis (correspondance par routeId ou nom normalisé)
+                        catalog.products.forEach(p => {
+                            if (
+                                (offer.routeId && p.routeId && offer.routeId === p.routeId) ||
+                                normalizeComparableName(p.name) === compTitle
+                            ) {
+                                registerProdReward(p.id, pts, offer.title);
+                            }
+                        });
+                    } else if (offer.type === 'MENU') {
+                        // Détecter si c'est un Menu King Size (Taille L à 240 pts) ou un Menu Classique (Taille M)
+                        const isKingSize = normTitle.includes('king size');
+                        const targetSize = isKingSize ? 'L' : 'M';
+                        const strippedOffer = normalizeComparableName(
+                            normTitle.replace(/^menu\s+king\s+size\s+/, '').replace(/^menu\s+/, '')
+                        );
+
+                        catalog.menus.forEach(m => {
+                            const strippedMenu = normalizeComparableName(m.name.replace(/^menu\s+/i, ''));
+                            const nameMatches =
+                                strippedMenu === strippedOffer ||
+                                (strippedOffer.length >= 12 && strippedMenu.startsWith(strippedOffer));
+
+                            if (nameMatches) {
+                                const hasTargetSize = m.sizes.some(s => s.size === targetSize);
+                                if (hasTargetSize) {
+                                    registerMenuReward(m.id, targetSize, pts, offer.title);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
         }
 
         // =========================================================
@@ -255,7 +611,7 @@
                 addrEl.textContent = found.address || '';
             } else {
                 nameEl.innerHTML = `Restaurant <span class="text-xs font-bold bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full ml-1">${escapeHtml(currentStoreId)}</span>`;
-                addrEl.textContent = allRestaurants.length > 0 ? 'Code restaurant personnalisé' : 'Chargement de la liste des restaurants France...';
+                addrEl.textContent = allRestaurants.length > 0 ? 'Code restaurant personnalisé' : 'Chargement des restaurants...';
             }
         }
 
@@ -297,13 +653,7 @@
             const box = document.getElementById('store-search-results');
             const q = normalizeText(input.value);
 
-            if (allRestaurants.length === 0) {
-                if (q.length >= 2) {
-                    renderStoreResultsList([], 'Liste des restaurants non chargée (vérifie la mise à jour n8n).');
-                }
-                return;
-            }
-
+            if (allRestaurants.length === 0) return;
             if (!q) {
                 box.classList.add('hidden');
                 return;
@@ -322,10 +672,7 @@
                 alert('La géolocalisation n\'est pas supportée par ton navigateur.');
                 return;
             }
-            if (allRestaurants.length === 0) {
-                alert('La liste des restaurants est encore en cours de chargement.');
-                return;
-            }
+            if (allRestaurants.length === 0) return;
 
             const btn = document.getElementById('btn-geoloc');
             const origText = btn.textContent;
@@ -349,10 +696,10 @@
 
                     renderStoreResultsList(nearest, 'Aucun restaurant à proximité');
                 },
-                (err) => {
+                () => {
                     btn.textContent = origText;
                     btn.disabled = false;
-                    alert('Impossible de récupérer ta position GPS. Tu peux taper ta ville ou ton code postal dans la barre de recherche.');
+                    alert('Impossible de récupérer ta position GPS. Tape ta ville ou ton code postal dans la barre de recherche.');
                 },
                 { enableHighAccuracy: false, timeout: 8000 }
             );
@@ -371,7 +718,7 @@
         }
 
         // =========================================================
-        // PROFILS DE PRODUITS & CHARGEMENT DU CATALOGUE
+        // CATALOGUE & PROFILS DE TAILLES
         // =========================================================
         function parseProductProfile(prod) {
             const rawName = (prod.name || '').trim();
@@ -516,9 +863,8 @@
                 multiSizeFamiliesList = Object.values(multiSizeFamilies)
                     .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
+                bindKingdomRewardsToCatalog();
                 populateAllSelects();
-
-                // Nettoyer du panier d'éventuels produits exclusifs qui n'existeraient pas dans le nouveau restaurant
                 reconcileCartWithNewCatalog();
                 updateCartDisplay();
                 recalculateIfVisible();
@@ -530,19 +876,16 @@
                 calcBtn.disabled = false;
             } catch (error) {
                 console.error('Erreur chargement catalogue :', error);
-                statusEl.textContent = `❌ Impossible de charger le catalogue de ce restaurant (${error.message}). Choisis-en un autre ci-dessus.`;
+                statusEl.textContent = `❌ Impossible de charger le catalogue de ce restaurant (${error.message}).`;
                 statusEl.className = 'text-sm text-red-600 font-semibold mt-1';
             }
         }
 
-        // Conserve le panier lors d'un changement de restaurant si les produits y sont aussi vendus
         function reconcileCartWithNewCatalog() {
             const updatedCart = [];
             for (const entry of cart) {
                 if (entry.isFamily) {
-                    if (multiSizeFamilies[entry.familyKey]) {
-                        updatedCart.push(entry);
-                    }
+                    if (multiSizeFamilies[entry.familyKey]) updatedCart.push(entry);
                 } else {
                     const directProd = productsById[entry.id];
                     if (directProd && directProd.canBuyAlone && directProd._aloneCents > 0) {
@@ -593,7 +936,9 @@
                 for (const item of (groups[groupName] || [])) {
                     const opt = document.createElement('option');
                     opt.value = `PROD:${item.id}`;
-                    opt.textContent = `${item.name} — ${formatEuros(item._aloneCents)}`;
+                    const rw = productRewardsById[item.id];
+                    const crownHint = rw ? ` · 👑 ${rw.points}` : '';
+                    opt.textContent = `${item.name} — ${formatEuros(item._aloneCents)}${crownHint}`;
                     optgroup.appendChild(opt);
                 }
 
@@ -651,16 +996,20 @@
                 </button>
             `).join('');
 
-            const prodHtml = prodMatches.map(p => `
-                <button
-                    type="button"
-                    onclick="addCartToken('PROD:${escapeAttr(p.id)}'); closeQuickSearch();"
-                    class="w-full text-left px-3 py-2 text-sm hover:bg-stone-100 flex justify-between items-center border-b last:border-b-0 border-stone-100"
-                >
-                    <span class="font-medium text-stone-800">${escapeHtml(p.name)}</span>
-                    <span class="text-xs font-bold text-orange-600 ml-2 whitespace-nowrap">+ ${formatEuros(p._aloneCents)}</span>
-                </button>
-            `).join('');
+            const prodHtml = prodMatches.map(p => {
+                const rw = productRewardsById[p.id];
+                const crownTag = rw ? `<span class="text-xs text-amber-700 font-bold ml-1">(👑 ${rw.points})</span>` : '';
+                return `
+                    <button
+                        type="button"
+                        onclick="addCartToken('PROD:${escapeAttr(p.id)}'); closeQuickSearch();"
+                        class="w-full text-left px-3 py-2 text-sm hover:bg-stone-100 flex justify-between items-center border-b last:border-b-0 border-stone-100"
+                    >
+                        <span class="font-medium text-stone-800">${escapeHtml(p.name)}${crownTag}</span>
+                        <span class="text-xs font-bold text-orange-600 ml-2 whitespace-nowrap">+ ${formatEuros(p._aloneCents)}</span>
+                    </button>
+                `;
+            }).join('');
 
             box.innerHTML = famHtml + prodHtml;
             box.classList.remove('hidden');
@@ -674,16 +1023,12 @@
         document.addEventListener('click', (e) => {
             const qBox = document.getElementById('quick-search-results');
             const qInput = document.getElementById('quick-search');
-            if (qBox && !qBox.contains(e.target) && e.target !== qInput) {
-                qBox.classList.add('hidden');
-            }
+            if (qBox && !qBox.contains(e.target) && e.target !== qInput) qBox.classList.add('hidden');
 
             const sBox = document.getElementById('store-search-results');
             const sInput = document.getElementById('store-search');
             const geoBtn = document.getElementById('btn-geoloc');
-            if (sBox && !sBox.contains(e.target) && e.target !== sInput && e.target !== geoBtn) {
-                sBox.classList.add('hidden');
-            }
+            if (sBox && !sBox.contains(e.target) && e.target !== sInput && e.target !== geoBtn) sBox.classList.add('hidden');
         });
 
         function addFromSelect(selectId) {
@@ -719,11 +1064,9 @@
                 cart[existingTargetIdx].qty += current.qty;
                 cart.splice(cartIndex, 1);
             } else if (newToken.startsWith('FAM:')) {
-                const familyKey = newToken.slice(4);
-                cart[cartIndex] = { key: newToken, isFamily: true, familyKey, qty: current.qty };
+                cart[cartIndex] = { key: newToken, isFamily: true, familyKey: newToken.slice(4), qty: current.qty };
             } else if (newToken.startsWith('PROD:')) {
-                const id = newToken.slice(5);
-                cart[cartIndex] = { key: newToken, isFamily: false, id, qty: current.qty };
+                cart[cartIndex] = { key: newToken, isFamily: false, id: newToken.slice(5), qty: current.qty };
             }
 
             updateCartDisplay();
@@ -769,6 +1112,7 @@
                 let unitCents = 0;
                 let unitSubtext = '';
                 let famObj = null;
+                let crownBadge = '';
 
                 if (entry.isFamily) {
                     famObj = multiSizeFamilies[entry.familyKey];
@@ -781,6 +1125,10 @@
                     title = famObj ? famObj.name : p.name;
                     unitCents = p._aloneCents;
                     unitSubtext = `${formatEuros(unitCents)} / unité`;
+                    const rw = productRewardsById[p.id];
+                    if (rw) {
+                        crownBadge = `<span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full ml-1">👑 éligible ${rw.points}</span>`;
+                    }
                 }
 
                 const lineCents = unitCents * entry.qty;
@@ -793,7 +1141,9 @@
                         `<option value="${escapeAttr(famToken)}" ${entry.key === famToken ? 'selected' : ''}>📏 Peu importe la taille</option>`,
                         ...famObj.members.map(m => {
                             const mToken = `PROD:${m.id}`;
-                            return `<option value="${escapeAttr(mToken)}" ${entry.key === mToken ? 'selected' : ''}>🎯 ${escapeHtml(m.name)} (${formatEuros(m._aloneCents)})</option>`;
+                            const rw = productRewardsById[m.id];
+                            const cTxt = rw ? ` · 👑${rw.points}` : '';
+                            return `<option value="${escapeAttr(mToken)}" ${entry.key === mToken ? 'selected' : ''}>🎯 ${escapeHtml(m.name)} (${formatEuros(m._aloneCents)}${cTxt})</option>`;
                         })
                     ].join('');
 
@@ -813,6 +1163,7 @@
                             <div>
                                 <span class="font-bold text-stone-800">${escapeHtml(title)}</span>
                                 <span class="text-xs text-stone-500 ml-1">(${escapeHtml(unitSubtext)})</span>
+                                ${crownBadge}
                             </div>
                             ${sizeSelectorHtml}
                         </div>
@@ -829,14 +1180,14 @@
             cartList.innerHTML = `
                 ${rowsHtml}
                 <div class="flex justify-between items-center pt-3 mt-1 text-stone-700 font-bold">
-                    <span>Total minimum si pris 100 % à l'unité :</span>
+                    <span>Total minimum hors menu & hors couronnes :</span>
                     <span class="text-stone-900">${formatEuros(totalRetailCents)}</span>
                 </div>
             `;
         }
 
         // =========================================================
-        // MOTEUR COMBINATOIRE EXACT (DIJKSTRA)
+        // MOTEUR COMBINATOIRE EXACT (MENUS + UNITÉ + COURONNES)
         // =========================================================
         function getSupplementCents(prod, sizeCode) {
             if (!prod || !prod.prices) return 0;
@@ -877,17 +1228,22 @@
             };
         }
 
-        function buildCandidateActions(cartGroups, allowUpgrades, allowKids) {
+        function buildCandidateActions(cartGroups, allowUpgrades, allowKids, availableCrowns) {
             const T = cartGroups.length;
             const actions = [];
 
+            // 1. Actions "À l'unité" (payantes en €) + Actions "Produit offert Kingdom" (0 € contre Couronnes)
             for (let g = 0; g < T; g++) {
                 const cg = cartGroups[g];
-                const prod = cg.isFamily ? cg.family.cheapestMember : cg.product;
                 const consume = new Array(T).fill(0);
                 consume[g] = 1;
+
+                // 1A. Achat normal à l'unité
+                const prod = cg.isFamily ? cg.family.cheapestMember : cg.product;
                 actions.push({
                     kind: 'ALONE',
+                    isKingdom: false,
+                    crownsCost: 0,
                     costCents: prod._aloneCents,
                     consume,
                     signature: `ALONE:${prod.id}`,
@@ -895,9 +1251,46 @@
                     fromAnySize: cg.isFamily,
                     familyName: cg.isFamily ? cg.family.name : null
                 });
+
+                // 1B. Produit à l'unité gratuit via Couronnes Kingdom
+                if (availableCrowns >= 40) {
+                    const candidateProds = cg.isFamily
+                        ? cg.family.members
+                        : (allowUpgrades && cg.product._familyObj
+                            ? cg.product._familyObj.members.filter(m => m._profile.rank >= cg.product._profile.rank)
+                            : [cg.product]);
+
+                    // Grouper par palier de couronnes : à nombre de couronnes identique, on prend la plus grande taille offerte !
+                    const bestByCrownTier = new Map();
+                    for (const candProd of candidateProds) {
+                        const rw = productRewardsById[candProd.id];
+                        if (!rw || rw.points > availableCrowns) continue;
+                        const prev = bestByCrownTier.get(rw.points);
+                        if (!prev || candProd._profile.rank > prev.prod._profile.rank) {
+                            bestByCrownTier.set(rw.points, { prod: candProd, rw });
+                        }
+                    }
+
+                    for (const { prod: freeProd, rw } of bestByCrownTier.values()) {
+                        actions.push({
+                            kind: 'KINGDOM_ALONE',
+                            isKingdom: true,
+                            crownsCost: rw.points,
+                            offerTitle: rw.offerTitle,
+                            costCents: 0,
+                            consume: [...consume],
+                            signature: `KD_ALONE:${freeProd.id}:${rw.points}`,
+                            product: freeProd,
+                            fromAnySize: cg.isFamily,
+                            familyName: cg.isFamily ? cg.family.name : null
+                        });
+                    }
+                }
             }
 
+            // 2. Actions "Menu" (payantes) + Actions "Menu offert Kingdom" (base 0 € + suppléments éventuels)
             const menuBucketsByConsume = new Map();
+            const kingdomMenuActions = [];
 
             for (const menu of catalog.menus) {
                 if (!allowKids && menu.kidsMenu) continue;
@@ -906,6 +1299,8 @@
                     const baseCents = toCents(sizeObj.price);
                     const steps = sizeObj.steps;
                     const k = steps.length;
+                    const menuReward = menuRewardsByKey[`${menu.id}:${sizeObj.size}`];
+                    const canRedeemMenuWithCrowns = Boolean(menuReward && menuReward.points <= availableCrowns);
 
                     const stepChoices = steps.map((step) => {
                         const bonus = getBestBonusOptionForStep(step, sizeObj.size);
@@ -975,9 +1370,12 @@
                             if (!prev || totalCents < prev.costCents) {
                                 bestForThisMenuSize.set(consumeKey, {
                                     kind: 'MENU',
+                                    isKingdom: false,
+                                    crownsCost: 0,
                                     menu,
                                     sizeObj,
                                     costCents: totalCents,
+                                    suppTotalCents: runningSuppCents,
                                     baseCents,
                                     consume: [...curConsume],
                                     consumeKey,
@@ -1026,6 +1424,21 @@
                             menuBucketsByConsume.set(candidate.consumeKey, []);
                         }
                         menuBucketsByConsume.get(candidate.consumeKey).push(candidate);
+
+                        // Version gratuite du menu via Couronnes Kingdom (base 0 € + suppléments éventuels conservés)
+                        if (canRedeemMenuWithCrowns) {
+                            // Un jouet payant / remise "Rien du tout" ne rend pas un menu gratuit négatif
+                            const kingdomCostCents = Math.max(0, candidate.suppTotalCents);
+                            kingdomMenuActions.push({
+                                ...candidate,
+                                kind: 'KINGDOM_MENU',
+                                isKingdom: true,
+                                crownsCost: menuReward.points,
+                                offerTitle: menuReward.offerTitle,
+                                costCents: kingdomCostCents,
+                                signature: `KD_MENU:${menu.id}:${sizeObj.size}:${menuReward.points}`
+                            });
+                        }
                     }
                 }
             }
@@ -1037,19 +1450,38 @@
                 }
             }
 
+            // Ajouter les meilleures actions Kingdom Menu par sous-ensemble couvert
+            const kdBuckets = new Map();
+            for (const km of kingdomMenuActions) {
+                const bKey = `${km.consumeKey}|${km.crownsCost}`;
+                if (!kdBuckets.has(bKey)) kdBuckets.set(bKey, []);
+                kdBuckets.get(bKey).push(km);
+            }
+            for (const list of kdBuckets.values()) {
+                list.sort((a, b) => a.costCents - b.costCents);
+                for (const item of list.slice(0, 3)) {
+                    actions.push(item);
+                }
+            }
+
             actions.forEach((act, idx) => { act.actionId = idx; });
             return actions;
         }
 
+        // File de priorité triant par : 1) Prix en € croissant, 2) Couronnes utilisées croissantes
         class MinHeap {
             constructor() { this.data = []; }
             size() { return this.data.length; }
+            _less(a, b) {
+                if (a.costCents !== b.costCents) return a.costCents < b.costCents;
+                return a.crownsUsed < b.crownsUsed;
+            }
             push(item) {
                 this.data.push(item);
                 let i = this.data.length - 1;
                 while (i > 0) {
                     const p = (i - 1) >> 1;
-                    if (this.data[p].costCents <= this.data[i].costCents) break;
+                    if (!this._less(this.data[i], this.data[p])) break;
                     [this.data[p], this.data[i]] = [this.data[i], this.data[p]];
                     i = p;
                 }
@@ -1066,8 +1498,8 @@
                         let smallest = i;
                         const l = 2 * i + 1;
                         const r = 2 * i + 2;
-                        if (l < n && this.data[l].costCents < this.data[smallest].costCents) smallest = l;
-                        if (r < n && this.data[r].costCents < this.data[smallest].costCents) smallest = r;
+                        if (l < n && this._less(this.data[l], this.data[smallest])) smallest = l;
+                        if (r < n && this._less(this.data[r], this.data[smallest])) smallest = r;
                         if (smallest === i) break;
                         [this.data[i], this.data[smallest]] = [this.data[smallest], this.data[i]];
                         i = smallest;
@@ -1077,7 +1509,7 @@
             }
         }
 
-        function findTop3Combinations(cartGroups, actions) {
+        function findTop3Combinations(cartGroups, actions, availableCrowns, maxKingdomRewards) {
             const T = cartGroups.length;
             const initialRem = cartGroups.map(cg => cg.qty);
 
@@ -1090,6 +1522,8 @@
             const heap = new MinHeap();
             heap.push({
                 costCents: 0,
+                crownsUsed: 0,
+                rewardsUsed: 0,
                 rem: initialRem,
                 minActionId: 0,
                 chosenActions: []
@@ -1099,7 +1533,7 @@
             const seenSolutionSignatures = new Set();
             const visitsPerState = new Map();
             let expansions = 0;
-            const MAX_EXPANSIONS = 25000;
+            const MAX_EXPANSIONS = 35000;
 
             while (heap.size() > 0 && solutions.length < 3 && expansions < MAX_EXPANSIONS) {
                 const state = heap.pop();
@@ -1108,6 +1542,11 @@
                 const firstGroup = state.rem.findIndex(q => q > 0);
 
                 if (firstGroup === -1) {
+                    const kdSig = state.chosenActions
+                        .filter(a => a.isKingdom)
+                        .map(a => a.kind === 'KINGDOM_MENU' ? `KM:${a.menu.id}:${a.sizeObj.size}` : `KP:${a.product.id}`)
+                        .sort()
+                        .join('|');
                     const menuSig = state.chosenActions
                         .filter(a => a.kind === 'MENU')
                         .map(a => `${a.menu.id}:${a.sizeObj.size}`)
@@ -1118,7 +1557,7 @@
                         .map(a => a.product.id)
                         .sort()
                         .join('|');
-                    const fullSig = `M[${menuSig}]_A[${aloneSig}]`;
+                    const fullSig = `KD[${kdSig}]_M[${menuSig}]_A[${aloneSig}]`;
 
                     if (!seenSolutionSignatures.has(fullSig)) {
                         seenSolutionSignatures.add(fullSig);
@@ -1127,14 +1566,19 @@
                     continue;
                 }
 
-                const stateKey = `${state.rem.join(',')}|${state.minActionId}`;
+                const stateKey = `${state.rem.join(',')}|${state.crownsUsed}|${state.rewardsUsed}|${state.minActionId}`;
                 const countVisits = (visitsPerState.get(stateKey) || 0) + 1;
-                if (countVisits > 6) continue;
+                if (countVisits > 5) continue;
                 visitsPerState.set(stateKey, countVisits);
 
                 const candidates = actionsByFirstGroup[firstGroup];
                 for (const act of candidates) {
                     if (act.actionId < state.minActionId) continue;
+
+                    if (act.isKingdom) {
+                        if (state.rewardsUsed + 1 > maxKingdomRewards) continue;
+                        if (state.crownsUsed + act.crownsCost > availableCrowns) continue;
+                    }
 
                     let fits = true;
                     for (let g = firstGroup; g < T; g++) {
@@ -1155,6 +1599,8 @@
 
                     heap.push({
                         costCents: state.costCents + act.costCents,
+                        crownsUsed: state.crownsUsed + act.crownsCost,
+                        rewardsUsed: state.rewardsUsed + (act.isKingdom ? 1 : 0),
                         rem: nextRem,
                         minActionId: nextMinActionId,
                         chosenActions: [...state.chosenActions, act]
@@ -1188,6 +1634,8 @@
 
             const allowUpgrades = document.getElementById('opt-upgrades').checked;
             const allowKids = document.getElementById('opt-kids').checked;
+            const allowMultiCrowns = document.getElementById('opt-multi-crowns').checked;
+            const maxKingdomRewards = userCrowns >= 40 ? (allowMultiCrowns ? 99 : 1) : 0;
 
             const cartGroups = cart.map(entry => {
                 if (entry.isFamily) {
@@ -1199,8 +1647,8 @@
             });
 
             const retailCents = cartGroups.reduce((sum, cg) => sum + cg.unitAloneCents * cg.qty, 0);
-            const actions = buildCandidateActions(cartGroups, allowUpgrades, allowKids);
-            const topSolutions = findTop3Combinations(cartGroups, actions);
+            const actions = buildCandidateActions(cartGroups, allowUpgrades, allowKids, userCrowns);
+            const topSolutions = findTop3Combinations(cartGroups, actions, userCrowns, maxKingdomRewards);
 
             const resultsContainer = document.getElementById('results-container');
             const retailBanner = document.getElementById('retail-banner');
@@ -1213,16 +1661,20 @@
                 return;
             }
 
-            const bestSavings = retailCents - topSolutions[0].costCents;
+            const best = topSolutions[0];
+            const bestSavings = retailCents - best.costCents;
+            const crownsNote = best.crownsUsed > 0
+                ? ` + <span class="inline-block bg-amber-100 text-amber-900 font-extrabold px-2.5 py-0.5 rounded-full">👑 ${best.crownsUsed} couronnes utilisées</span>`
+                : '';
+
             retailBanner.innerHTML = bestSavings > 0
                 ? `<p class="text-sm md:text-base text-stone-700">
-                     Prix minimum si pris séparément à l'unité : <b class="line-through text-stone-500">${formatEuros(retailCents)}</b>
-                     — Avec la combinaison #1, tu paies <b class="text-emerald-700">${formatEuros(topSolutions[0].costCents)}</b>
-                     soit <span class="inline-block bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full ml-1">−${formatEuros(bestSavings)} d'économie réelle</span> !
+                     Prix hors menu & sans couronnes : <b class="line-through text-stone-500">${formatEuros(retailCents)}</b>
+                     — Avec la combinaison #1, tu paies <b class="text-emerald-700">${formatEuros(best.costCents)}</b>
+                     soit <span class="inline-block bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full ml-1">−${formatEuros(bestSavings)} d'économie réelle</span>${crownsNote} !
                    </p>`
                 : `<p class="text-sm md:text-base text-stone-700">
-                     Prix optimal vérifié : <b class="text-orange-600">${formatEuros(topSolutions[0].costCents)}</b>
-                     <span class="text-stone-500">(aucun menu n'est moins cher que l'achat à l'unité pour cette sélection, voici les options les plus proches)</span>.
+                     Prix optimal vérifié : <b class="text-orange-600">${formatEuros(best.costCents)}</b>.
                    </p>`;
 
             const cardsHtml = [];
@@ -1245,7 +1697,94 @@
             resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
+        function renderMenuBlock(mAct, labelIndex, isKingdomMenu) {
+            const kioskPath = isKingdomMenu
+                ? `Onglet Kingdom → « ${mAct.offerTitle} » (${mAct.crownsCost} 👑)`
+                : ((mAct.menu.paths && mAct.menu.paths[0]) ? mAct.menu.paths[0] : 'Menus');
+
+            const stepsHtml = mAct.stepsDetail.map((st, sIdx) => {
+                const suppStr = st.supplementCents > 0
+                    ? ` <span class="text-xs font-bold text-orange-700">(+${formatEuros(st.supplementCents)})</span>`
+                    : (st.supplementCents < 0 && !isKingdomMenu ? ` <span class="text-xs font-bold text-emerald-700">(${formatEuros(st.supplementCents)})</span>` : '');
+
+                if (st.mode === 'matched') {
+                    let subNote = '';
+                    if (st.matchType === 'upgrade') {
+                        subNote = `<div class="text-xs text-sky-700 font-medium mt-0.5">⬆️ Taille supérieure incluse (remplace ${escapeHtml(st.wantedLabel)})</div>`;
+                    } else if (st.matchType === 'any_size') {
+                        subNote = `<div class="text-xs text-orange-700 font-medium mt-0.5">📏 Format retenu pour « ${escapeHtml(st.wantedLabel)} »</div>`;
+                    }
+                    return `
+                        <li class="py-1.5 border-b last:border-b-0 border-stone-200/70">
+                            <div class="text-xs text-stone-500">${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
+                            <div class="font-semibold text-stone-800">✓ ${escapeHtml(st.prod.name)}${suppStr}</div>
+                            ${subNote}
+                        </li>
+                    `;
+                }
+
+                const isNoToyDiscount = normalizeText(st.prod.name).includes('rien du tout');
+                if (isNoToyDiscount && !isKingdomMenu) {
+                    return `
+                        <li class="my-1.5 p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                            <div class="text-xs font-bold text-emerald-800">💡 ASTUCE BORNE — ${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
+                            <div class="text-xs text-emerald-900 mt-0.5">
+                                Sélectionne <b>« ${escapeHtml(st.prod.name)} »</b> pour économiser <b>${formatEuros(-st.supplementCents)}</b>.
+                            </div>
+                        </li>
+                    `;
+                }
+
+                const otherChoices = (st.alternatives || [])
+                    .slice(0, 4)
+                    .map(p => p.name)
+                    .join(', ');
+
+                return `
+                    <li class="my-1.5 p-2.5 rounded-lg bg-amber-50 border border-amber-300">
+                        <div class="text-xs font-extrabold text-amber-900">
+                            🎁 PRODUIT BONUS À CHOISIR (${sIdx + 1}. ${escapeHtml(st.stepName)})
+                        </div>
+                        <div class="text-xs text-amber-900 mt-0.5">
+                            Inclus dans ce menu ! Choisis sur la borne :
+                            <b>${escapeHtml(otherChoices || st.prod.name)}</b>${suppStr || ' (inclus à +0,00 €)'}.
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            const containerStyle = isKingdomMenu
+                ? 'bg-amber-50/70 border-amber-300'
+                : 'bg-stone-50 border-stone-200';
+
+            const headerTag = isKingdomMenu
+                ? `<span class="text-xs font-extrabold uppercase tracking-wide text-amber-800">👑 Récompense Kingdom · Taille ${escapeHtml(mAct.sizeObj.size)} (−${mAct.crownsCost} 👑)</span>`
+                : `<span class="text-xs font-bold uppercase tracking-wide text-orange-600">Menu #${labelIndex} · Taille ${escapeHtml(mAct.sizeObj.size)}</span>`;
+
+            const priceRight = isKingdomMenu
+                ? `<span class="font-extrabold text-sm text-emerald-700 whitespace-nowrap">${mAct.costCents === 0 ? 'OFFERT (0,00 €)' : formatEuros(mAct.costCents)}</span>`
+                : `<span class="font-extrabold text-sm text-stone-800 whitespace-nowrap">${formatEuros(mAct.costCents)}</span>`;
+
+            return `
+                <div class="${containerStyle} rounded-xl p-3.5 border text-left mb-3">
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            ${headerTag}
+                            <h4 class="font-extrabold text-stone-900 text-sm">${escapeHtml(mAct.menu.name)}</h4>
+                        </div>
+                        ${priceRight}
+                    </div>
+                    <div class="text-xs text-stone-600 mt-1 mb-2">
+                        📍 Borne : <b>${escapeHtml(kioskPath)}</b>
+                    </div>
+                    <ul class="text-sm">${stepsHtml}</ul>
+                </div>
+            `;
+        }
+
         function renderSolutionCard(solution, rank, retailCents, orderClasses) {
+            const kdMenus = solution.chosenActions.filter(a => a.kind === 'KINGDOM_MENU');
+            const kdAlones = solution.chosenActions.filter(a => a.kind === 'KINGDOM_ALONE');
             const menus = solution.chosenActions.filter(a => a.kind === 'MENU');
             const alones = solution.chosenActions.filter(a => a.kind === 'ALONE');
 
@@ -1255,32 +1794,52 @@
                     aloneGrouped[a.product.id] = { product: a.product, qty: 0, anySizeNotes: new Set() };
                 }
                 aloneGrouped[a.product.id].qty += 1;
-                if (a.fromAnySize && a.familyName) {
-                    aloneGrouped[a.product.id].anySizeNotes.add(a.familyName);
-                }
+                if (a.fromAnySize && a.familyName) aloneGrouped[a.product.id].anySizeNotes.add(a.familyName);
             }
             const aloneList = Object.values(aloneGrouped);
 
+            // Titre synthétique
             let title = '';
-            if (menus.length === 0) {
+            const totalMenusCount = menus.length + kdMenus.length;
+            const totalAlonesCount = alones.length + kdAlones.length;
+
+            if (solution.crownsUsed > 0 && solution.costCents === 0) {
+                title = '100 % Offert avec tes Couronnes !';
+            } else if (solution.crownsUsed > 0) {
+                title = `Combo Optimisé + Kingdom`;
+            } else if (totalMenusCount === 0) {
                 title = '100 % À l\'unité (Hors Menu)';
-            } else if (menus.length === 1 && aloneList.length === 0) {
+            } else if (menus.length === 1 && totalAlonesCount === 0) {
                 title = formatMenuTitle(menus[0].menu.name, menus[0].sizeObj.size);
-            } else if (menus.length >= 1 && aloneList.length === 0) {
-                title = `${menus.length} Menus combinés`;
+            } else if (totalMenusCount >= 1 && totalAlonesCount === 0) {
+                title = `${totalMenusCount} Menus combinés`;
             } else {
-                title = `${menus.length} Menu${menus.length > 1 ? 's' : ''} + ${alones.length} article${alones.length > 1 ? 's' : ''} seul${alones.length > 1 ? 's' : ''}`;
+                title = `${totalMenusCount} Menu${totalMenusCount > 1 ? 's' : ''} + ${totalAlonesCount} article${totalAlonesCount > 1 ? 's' : ''} seul${totalAlonesCount > 1 ? 's' : ''}`;
             }
 
             const diffCents = retailCents - solution.costCents;
             let diffBadge = '';
             if (diffCents > 0) {
-                diffBadge = `<span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-extrabold px-2.5 py-1 rounded-full mt-2">💰 Économie : −${formatEuros(diffCents)} vs unité</span>`;
+                diffBadge = `<span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-extrabold px-2.5 py-1 rounded-full mt-2">💰 Économie : −${formatEuros(diffCents)}</span>`;
             } else if (diffCents === 0) {
                 diffBadge = `<span class="inline-block bg-stone-100 text-stone-600 text-xs font-bold px-2.5 py-1 rounded-full mt-2">Prix identique au détail</span>`;
             } else {
                 diffBadge = `<span class="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full mt-2">+${formatEuros(-diffCents)} vs taille mini seule</span>`;
             }
+
+            const crownsBadge = solution.crownsUsed > 0
+                ? `<div class="mt-1.5">
+                     <span class="inline-block bg-amber-400/25 border border-amber-400 text-amber-950 text-xs font-extrabold px-2.5 py-0.5 rounded-full">
+                       👑 ${solution.crownsUsed} couronnes utilisées (reste ${userCrowns - solution.crownsUsed} 👑)
+                     </span>
+                   </div>`
+                : (userCrowns >= 40 ? `<div class="mt-1.5"><span class="text-xs text-stone-400 font-semibold">👑 0 couronne utilisée (garde tes ${userCrowns} 👑)</span></div>` : '');
+
+            const multiTicketWarning = solution.rewardsUsed > 1
+                ? `<div class="mb-3 p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 font-medium text-left">
+                     ⚠️ <b>${solution.rewardsUsed} récompenses Kingdom utilisées</b> : fais <b>${solution.rewardsUsed} commandes séparées</b> à la suite sur la borne (1 offre Kingdom max par ticket).
+                   </div>`
+                : '';
 
             const rankStyles = {
                 1: {
@@ -1303,78 +1862,33 @@
                 }
             }[rank];
 
-            const menusHtml = menus.map((mAct, mIdx) => {
-                const kioskPath = (mAct.menu.paths && mAct.menu.paths[0]) ? mAct.menu.paths[0] : 'Menus';
-
-                const stepsHtml = mAct.stepsDetail.map((st, sIdx) => {
-                    const suppStr = st.supplementCents > 0
-                        ? ` <span class="text-xs font-bold text-orange-700">(+${formatEuros(st.supplementCents)})</span>`
-                        : (st.supplementCents < 0 ? ` <span class="text-xs font-bold text-emerald-700">(${formatEuros(st.supplementCents)})</span>` : '');
-
-                    if (st.mode === 'matched') {
-                        let subNote = '';
-                        if (st.matchType === 'upgrade') {
-                            subNote = `<div class="text-xs text-sky-700 font-medium mt-0.5">⬆️ Taille supérieure incluse (remplace ${escapeHtml(st.wantedLabel)})</div>`;
-                        } else if (st.matchType === 'any_size') {
-                            subNote = `<div class="text-xs text-orange-700 font-medium mt-0.5">📏 Format retenu pour « ${escapeHtml(st.wantedLabel)} »</div>`;
-                        }
-                        return `
-                            <li class="py-1.5 border-b last:border-b-0 border-stone-200/70">
-                                <div class="text-xs text-stone-500">${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
-                                <div class="font-semibold text-stone-800">✓ ${escapeHtml(st.prod.name)}${suppStr}</div>
-                                ${subNote}
-                            </li>
-                        `;
-                    }
-
-                    const isNoToyDiscount = normalizeText(st.prod.name).includes('rien du tout');
-                    if (isNoToyDiscount) {
-                        return `
-                            <li class="my-1.5 p-2 rounded-lg bg-emerald-50 border border-emerald-200">
-                                <div class="text-xs font-bold text-emerald-800">💡 ASTUCE BORNE — ${sIdx + 1}. ${escapeHtml(st.stepName)}</div>
-                                <div class="text-xs text-emerald-900 mt-0.5">
-                                    Sélectionne <b>« ${escapeHtml(st.prod.name)} »</b> pour économiser <b>${formatEuros(-st.supplementCents)}</b>
-                                    <span class="text-emerald-700">(ou prends un jouet pour +0,30 €)</span>.
-                                </div>
-                            </li>
-                        `;
-                    }
-
-                    const otherChoices = (st.alternatives || [])
-                        .slice(0, 4)
-                        .map(p => p.name)
-                        .join(', ');
-
-                    return `
-                        <li class="my-1.5 p-2.5 rounded-lg bg-amber-50 border border-amber-300">
-                            <div class="text-xs font-extrabold text-amber-900">
-                                🎁 PRODUIT BONUS À CHOISIR (${sIdx + 1}. ${escapeHtml(st.stepName)})
-                            </div>
-                            <div class="text-xs text-amber-900 mt-0.5">
-                                Tu ne l'as pas demandé, mais ce menu reste plus avantageux ! Il faudra choisir sur la borne :
-                                <b>${escapeHtml(otherChoices || st.prod.name)}</b>${suppStr || ' (inclus à +0,00 €)'}.
-                            </div>
-                        </li>
-                    `;
-                }).join('');
-
-                return `
-                    <div class="bg-stone-50 rounded-xl p-3.5 border border-stone-200 text-left mb-3">
-                        <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <span class="text-xs font-bold uppercase tracking-wide text-orange-600">Menu #${mIdx + 1} · Taille ${escapeHtml(mAct.sizeObj.size)}</span>
-                                <h4 class="font-extrabold text-stone-900 text-sm">${escapeHtml(mAct.menu.name)}</h4>
-                            </div>
-                            <span class="font-extrabold text-sm text-stone-800 whitespace-nowrap">${formatEuros(mAct.costCents)}</span>
-                        </div>
-                        <div class="text-xs text-stone-500 mt-1 mb-2">
-                            📍 Borne : <b class="text-stone-700">${escapeHtml(kioskPath)}</b>
-                        </div>
-                        <ul class="text-sm">${stepsHtml}</ul>
+            // 1. Produits seuls offerts via Kingdom
+            const kdAlonesHtml = kdAlones.length > 0 ? `
+                <div class="bg-amber-50/70 rounded-xl p-3.5 border border-amber-300 text-left mb-3">
+                    <div class="text-xs font-extrabold uppercase tracking-wide text-amber-800 mb-1.5">
+                        👑 Produit${kdAlones.length > 1 ? 's' : ''} offert${kdAlones.length > 1 ? 's' : ''} avec tes Couronnes
                     </div>
-                `;
-            }).join('');
+                    <ul class="text-sm space-y-2">
+                        ${kdAlones.map(ka => `
+                            <li class="flex justify-between items-start gap-2 border-b last:border-b-0 border-amber-200/70 pb-1.5 last:pb-0">
+                                <div>
+                                    <div class="font-bold text-stone-900">✓ ${escapeHtml(ka.product.name)}</div>
+                                    <div class="text-xs text-amber-900">📍 Onglet Kingdom → <b>« ${escapeHtml(ka.offerTitle)} »</b> (−${ka.crownsCost} 👑)</div>
+                                </div>
+                                <span class="font-extrabold text-emerald-700 text-xs whitespace-nowrap">OFFERT (0,00 €)</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            ` : '';
 
+            // 2. Menus offerts via Kingdom
+            const kdMenusHtml = kdMenus.map((km, idx) => renderMenuBlock(km, idx + 1, true)).join('');
+
+            // 3. Menus payants normaux
+            const menusHtml = menus.map((mAct, idx) => renderMenuBlock(mAct, idx + 1, false)).join('');
+
+            // 4. Articles payants à l'unité
             const alonesHtml = aloneList.length > 0 ? `
                 <div class="bg-stone-50 rounded-xl p-3.5 border border-stone-200 text-left">
                     <div class="text-xs font-bold uppercase tracking-wide text-stone-500 mb-1.5">
@@ -1411,11 +1925,15 @@
                             <h3 class="font-extrabold text-lg text-stone-800 mt-3">${escapeHtml(title)}</h3>
                             <p class="${rankStyles.priceColor} font-black mt-1">${formatEuros(solution.costCents)}</p>
                             ${diffBadge}
+                            ${crownsBadge}
                         </div>
                         <div class="border-t border-stone-200 pt-3">
                             <p class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
                                 Marche à suivre sur la borne :
                             </p>
+                            ${multiTicketWarning}
+                            ${kdMenusHtml}
+                            ${kdAlonesHtml}
                             ${menusHtml}
                             ${alonesHtml}
                         </div>
@@ -1424,10 +1942,12 @@
             `;
         }
 
-        // Lancement simultané de la liste des restaurants + du catalogue du restaurant actif
         async function initApp() {
+            document.getElementById('input-crowns').value = userCrowns;
+            updateCrownsUI();
             await Promise.all([
                 loadRestaurantsList(),
+                loadKingdomLevels(),
                 loadCatalog(currentStoreId)
             ]);
             updateStoreHeaderUI();
